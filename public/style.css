@@ -1,0 +1,89 @@
+*{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+html, body, main{
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-size: 26px;
+}
+
+main{
+    display: flex;
+}
+
+button{
+    border: none;
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+    transition: 200ms;
+}
+
+.menu{
+    width: 15vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.game{
+    width: 85vw;
+    background-color: green;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mesa{
+    width: 1000px;
+    height: 670px;
+    border: solid 1px #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.mesa > div{
+    height: 210px;
+    width: 100%;
+    border: 1px solid rgb(212, 212, 212);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mao{
+    display: flex;
+}
+
+.carta{
+    height: 150px;
+    width: 100px;
+    margin: 0 10px;
+    box-shadow: 5px 5px 5px;
+    border: solid 5px rgb(65, 65, 65);
+    border-radius: 6px;
+}
+
+.iniciarpartida{
+    background-color: rgb(109, 70, 26);
+    color: white;
+}
+
+.iniciarpartida:hover{
+    background-color: rgb(66, 42, 15);
+}
+
+.calcularRodada{
+    background-color: blue;
+    color: white;
+}
+
+.calcularRodada:hover{
+    background-color: rgb(32, 32, 139);
+}
