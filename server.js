@@ -4,11 +4,15 @@ const path = require('path');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+const bodyParser = require('body-parser');
+
+const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'public'));
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
+
 
 const game = {
     status: false,
@@ -98,8 +102,14 @@ const player2 = {
     }
 }
 
-app.use('/', (req, res) =>{
+app.use('/home', (req, res) =>{
     res.render('index.html');
+});
+
+app.post('/sala', urlencodedParser, (req, res) =>{
+    console.log(req.body);
+    //let salaId = req.get('');
+    res.render('sala.html');
 });
 
 io.on('connection', function(socket){
@@ -180,4 +190,6 @@ io.on('connection', function(socket){
 });
 
 
-server.listen(3000);
+server.listen(3000, () => {
+    console.log("Servidor rodando na porta 3000");
+});
