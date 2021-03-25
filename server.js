@@ -1,10 +1,12 @@
 const express = require('express');
 const path = require('path');
-
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const bodyParser = require('body-parser');
+
+const Jogo = require('./src/Jogo.js');
+const { Console } = require('console');
 
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
@@ -14,113 +16,31 @@ app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 
 
-const game = {
-    status: false,
-    turnoPlayer: "",
-    baralho: [
-        ["2", "copas", "0", 1],
-        ["3", "copas", "0", 2],
-        ["4", "copas", "0", 3],
-        ["5", "copas", "0", 3],
-        ["6", "copas", "0", 5],
-        ["7", "copas", "10", 9],
-        ["dama", "copas", "2", 6],
-        ["valete", "copas", "3", 7],
-        ["rei", "copas", "4", 8],
-        ["as", "copas", "11", 10],
-        ["2", "ouros", "0", 1],
-        ["3", "ouros", "0", 2],
-        ["4", "ouros", "0", 3],
-        ["5", "ouros", "0", 4],
-        ["6", "ouros", "0", 5],
-        ["7", "ouros", "10", 9],
-        ["dama", "ouros", "2", 6],
-        ["valete", "ouros", "3", 7],
-        ["rei", "ouros", "4", 8],
-        ["as", "ouros", "11", 10],
-        ["2", "espadas", "0", 1],
-        ["3", "espadas", "0", 2],
-        ["4", "espadas", "0", 3],
-        ["5", "espadas", "0", 4],
-        ["6", "espadas", "0", 5],
-        ["7", "espadas", "10", 9],
-        ["dama", "espadas", "2", 6],
-        ["valete", "espadas", "3", 7],
-        ["rei", "espadas", "4", 8],
-        ["as", "espadas", "11", 10],
-        ["2", "paus", "0", 1],
-        ["3", "paus", "0", 2],
-        ["4", "paus", "0", 3],
-        ["5", "paus", "0", 4],
-        ["6", "paus", "0", 5],
-        ["7", "paus", "10", 9],
-        ["dama", "paus", "2", 6],
-        ["valete", "paus", "3", 7],
-        ["rei", "paus", "4", 8],
-        ["as", "paus", "11", 10]
-    ],
-    darCartas: () => {
-        game.status = true;
-        for(let i = 0; i<3; i++){
-            let num = Math.floor(Math.random() * (game.baralho.length));
-            player1.mao.push(game.baralho[num]);
-            game.baralho.splice(num, 1);
-        }
-        for(let i = 0; i<3; i++){
-            let num = Math.floor(Math.random() * (game.baralho.length));
-            player2.mao.push(game.baralho[num]);
-            game.baralho.splice(num, 1);
-        }
-    },
-};
-
-const player1 = {
-    id: null,
-    ordem: 1,
-    mao: [],
-    jogada: [],
-    pontos: 0,
-    comprarCarta: () => {
-        let num1 = Math.floor(Math.random() * (game.baralho.length));
-        player1.mao.push(game.baralho[num1]);
-        game.baralho.splice(num1, 1);
-        player1.jogada = [];
-    }
-}
-
-const player2 = {
-    id: null,
-    ordem: 2,
-    mao: [],
-    jogada: [],
-    pontos: 0,
-    comprarCarta: () => {
-        let num2 = Math.floor(Math.random() * (game.baralho.length));
-        player2.mao.push(game.baralho[num2]);
-        game.baralho.splice(num2, 1);
-        player2.jogada = [];
-    }
-}
-
 app.use('/home', (req, res) =>{
     res.render('index.html');
+    console.log(Jogo);
 });
 
-app.post('/sala', urlencodedParser, (req, res) =>{
-    console.log(req.body);
-    //let salaId = req.get('');
-    res.render('sala.html');
+var jogos = {};
+
+app.get('/sala', urlencodedParser, (req, res) =>{
+    let idSala = req.query.idSala;
+    if(!jogos[idSala]){
+        jogos[idSala] = new Jogo(idSala);
+        console.log(jogos);
+        res.render('sala.html');
+    }else if(!jogos[idSala].jogador1.id | !jogos[idSala].jogador2.id){
+        res.render('sala.html');
+        console.log("novo jogador!");
+    }else{
+        res.render('index.html');
+    }
 });
 
 io.on('connection', function(socket){
     console.log(`Socket conectado -> id:${socket.id}`);
 
-    if(!player1.id){
-        player1.id = socket.id;
-        game.turnoPlayer = socket.id;
-    }else if (!player2.id){
-        player2.id = socket.id;
-    }
+    //ATENÇÃO definir como vai setar o player!
 
     socket.on('iniciarPartida', () => {
         if(!game.status){
@@ -178,13 +98,13 @@ io.on('connection', function(socket){
     });
 
     socket.on('disconnect', () =>{
-        if(socket.id == player1.id){
+        /* if(socket.id == player1.id){
             player1.id = null,
             player1.mao = [];
         }else if(socket.id == player2.id){
             player2.id = null,
             player2.mao = [];
-        }
+        } */
         console.log(`Socket desconectado -> id: ${socket.id}`);
     })
 });

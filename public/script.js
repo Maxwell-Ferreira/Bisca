@@ -57,6 +57,19 @@ function atualizarPlacar(placar){
     $("#placar").html(`Placar:<br/> Jogador 1:${placar.player1}</br>Jogador 2: ${placar.player2}`);
 }
 
+function resgatarGET(){
+    var query = location.search.slice(1);
+    var partes = query.split('&');
+    var data = {};
+    partes.forEach(function (parte) {
+        var chaveValor = parte.split('=');
+        var chave = chaveValor[0];
+        var valor = chaveValor[1];
+        data[chave] = valor;
+    });
+    return data;
+}
+
 $("#iniciar").click(function (event){
     event.preventDefault();
     

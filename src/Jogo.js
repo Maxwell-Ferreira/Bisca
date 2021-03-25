@@ -112,3 +112,5 @@ class Jogo{
         this.player1.jogada = [];
     }
 }
+
+module.exports = Jogo;
