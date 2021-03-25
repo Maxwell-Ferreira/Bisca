@@ -47,13 +47,13 @@ class Jogo{
         ];
         this.trunfo = '';
         this.jogador1 = {
-            id: null,
+            id: false,
             mao: [],
             jogada: [],
             pontos: 0
         };
         this.jogador2 = {
-            id: null,
+            id: false,
             mao: [],
             jogada: [],
             pontos: 0
@@ -95,12 +95,12 @@ class Jogo{
     darCartas(){
         for(let i = 0; i<3; i++){
             this.num = Math.floor(Math.random() * (this.baralho.length));
-            this.player1.mao.push(this.baralho[this.num]);
+            this.jogador1.mao.push(this.baralho[this.num]);
             this.baralho.splice(this.num, 1);
         }
         for(let i = 0; i<3; i++){
             this.num = Math.floor(Math.random() * (this.baralho.length));
-            this.player2.mao.push(this.baralho[this.num]);
+            this.jogador2.mao.push(this.baralho[this.num]);
             this.baralho.splice(this.num, 1);
         }
     }

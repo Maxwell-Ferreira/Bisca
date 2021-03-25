@@ -1,11 +1,12 @@
-var socket = io("http://localhost:3000");
+var socket = io("http://localhost:3000", resgatarGET());
 
 var id = "";
+var idSala = ";"
 
 socket.on('connect', () =>{
     id = socket.id;
 
-    console.log(id);
+    console.log(socket);
 });
 
 socket.on('darcartas', function(player){
@@ -24,9 +25,14 @@ socket.on('atualizarPlacar', function(placar){
     atualizarPlacar(placar);
 });
 
+socket.on('msg', function(msg){
+    alert(msg);
+});
+
 function darCartas(player){
     $("#mao").html("");
     $("#maoOponente").html("");
+    $('#iniciar').css("display", "none");
 
     for(let i=0; i<player.mao.length; i++){
         $("#mao").append(`<img src="imagens/cartas/${player.mao[i][0]}${player.mao[i][1]}.png" alt="" class="carta" id="${player.ordem}${i}" onClick="jogarCarta(${i})">`);
@@ -70,9 +76,53 @@ function resgatarGET(){
     return data;
 }
 
-$("#iniciar").click(function (event){
+function criarSala(event){
     event.preventDefault();
-    
-    socket.emit("iniciarPartida");
-});
+    idSala = document.getElementById("idCriarSala").value;
+    socket.emit('criarSala', idSala);
+    limparTela();
+    gerarTelaPartida();
+}
 
+function entrarSala(event){
+    event.preventDefault();
+    idSala = document.getElementById("idEntrarSala").value;
+    socket.emit('entrarSala', idSala);
+    limparTela();
+    gerarTelaPartida();
+}
+
+function limparTela(){
+    $('#tela').html('');
+}
+
+function iniciarPartida(event){
+    event.preventDefault();
+    socket.emit("iniciarPartida", idSala);
+}
+
+function gerarTelaPartida(){
+    $('#tela').html('\
+        <main class="partida">\
+            <section class="menu">\
+                <h1>Bisca</h1>\
+                <div class="placar" id="placar"></div>\
+                <button id="iniciar" class="iniciarpartida" onClick="iniciarPartida(event)">Iniciar Partida</button>\
+                <div id="calcrodada"></div>\
+            </section>\
+            <section class="game">\
+                <div class="oponente">\
+                    <div class="mao" id="maoOponente">\
+                    </div>\
+                </div>\
+                <div class="jogadas">\
+                    <div id="jogada"></div>\
+                </div>\
+                <div class="player">\
+                    <div class="mao" id="mao">\
+                    </div>\
+                </div>\
+            </section>\
+        </main>\
+    ');
+}

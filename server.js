@@ -22,16 +22,16 @@ app.use('/home', (req, res) =>{
 });
 
 var jogos = {};
+var jogo = {};
 
 app.get('/sala', urlencodedParser, (req, res) =>{
     let idSala = req.query.idSala;
     if(!jogos[idSala]){
-        jogos[idSala] = new Jogo(idSala);
-        console.log(jogos);
+        jogo = new Jogo(idSala);
+        jogos[idSala] = jogo;
         res.render('sala.html');
     }else if(!jogos[idSala].jogador1.id | !jogos[idSala].jogador2.id){
         res.render('sala.html');
-        console.log("novo jogador!");
     }else{
         res.render('index.html');
     }
@@ -39,19 +39,38 @@ app.get('/sala', urlencodedParser, (req, res) =>{
 
 io.on('connection', function(socket){
     console.log(`Socket conectado -> id:${socket.id}`);
+    
+    socket.on('criarSala', (idSala) => {
+        if(!jogos[idSala]){
+            let jogo = new Jogo(idSala);
+            jogo.jogador1.id = socket.id;
+            jogos[idSala] = jogo;
+        }else{
+            socket.emit("msg", "Sala já existe!");
+        }
+    });
 
-    //ATENÇÃO definir como vai setar o player!
+    socket.on('entrarSala', (idSala) => {
+        if(jogos[idSala]){
+            if(jogos[idSala].jogador2.id){
+                socket.emit("msg", "Sala cheia!");
+            }else{
+                jogos[idSala].jogador2.id = socket.id;
+            }
+        }
+    });
 
-    socket.on('iniciarPartida', () => {
-        if(!game.status){
-            game.darCartas();
-            io.to(player1.id).emit("darcartas", player1);
-            io.to(player2.id).emit("darcartas", player2);
+    socket.on('iniciarPartida', (idSala) => {
+        if(jogos[idSala].jogador1.id != false & jogos[idSala].jogador2.id != false){
+            jogos[idSala].darCartas();
+            console.log(jogos[idSala]);
+            io.to(jogos[idSala].jogador1.id).emit("darcartas", jogos[idSala].jogador1);
+            io.to(jogos[idSala].jogador2.id).emit("darcartas", jogos[idSala].jogador2);
         }
     });
 
     socket.on('jogarCarta', (jogada) =>{
-        if(game.status && jogada.idPlayer == game.turnoPlayer){
+        /* if(game.status && jogada.idPlayer == game.turnoPlayer){
             if(jogada.idPlayer == player1.id){
                 game.turnoPlayer = player2.id;
                 player1.jogada = player1.mao[jogada.indice];
@@ -65,7 +84,7 @@ io.on('connection', function(socket){
                 let indiceConcat = `${player2.ordem}${jogada.indice}`;
                 io.emit('cartaJogada', player2.jogada, indiceConcat);
             }
-        }
+        } */
     });
 
     socket.on('calcularRodada', () => {
