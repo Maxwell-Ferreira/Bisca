@@ -14,8 +14,16 @@ socket.on('darcartas', function(jogador, adversario){
     darCartas(jogador, adversario);
 });
 
-socket.on('cartaJogada', function(jogada, indice){
-    renderJogarCarta(jogada, indice);
+socket.on('cartaJogada', function(jogada){
+    renderJogarCarta(jogada);
+});
+
+socket.on('removerCartaMao', function(indice){
+    removerCartaJogada(indice);
+});
+
+socket.on('removerCartaAdversario', function(){
+    removerCartaAdversario();
 });
 
 socket.on('limparMesa', function(){
@@ -34,20 +42,27 @@ function darCartas(jogador, adversario){
     $('#iniciar').css("display", "none");
     $('#placar').html(`<h2>Placar </h2><p>${jogador.nome}: ${jogador.pontos}</p><p>${adversario.nome}: ${adversario.pontos}</p>`);
 
-    for(let i=0; i<player.mao.length; i++){
-        $("#mao").append(`<img src="imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${jogador.ordem}${i}" onClick="jogarCarta(${i})">`);
-        $("#maoOponente").append(`<img src="imagens/cartas/verso.png" class="carta" id=""></img>`);
+    for(let i=0; i<jogador.mao.length; i++){
+        $("#mao").append(`<img src="imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${i}" onClick="jogarCarta(${i})">`);
+        $("#maoOponente").append(`<img src="imagens/cartas/verso.png" class="carta" id="op${i}"></img>`);
     }
     $("#calcrodada").html('<button class="calcularRodada" onClick="calcularRodada()">CalcularRodada</button>');
 }
 
 function jogarCarta(indice){
-    let jogada = {idPlayer: id, indice: indice};
+    let jogada = {idSala: idSala, indice: indice};
     socket.emit("jogarCarta", jogada);
 }
 
-function renderJogarCarta(jogada, indice){
+function removerCartaJogada(indice){
     $("#"+indice).css("display", "none");
+}
+
+function removerCartaAdversario(){
+    $("#op"+1).css("display", "none");
+}
+
+function renderJogarCarta(jogada){
     $("#jogada").append(`<img src="imagens/cartas/${jogada[0]}${jogada[1]}.png" class="carta">`);
 }
 

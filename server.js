@@ -66,8 +66,12 @@ io.on('connection', function(socket){
 
     socket.on('iniciarPartida', (idSala) => {
         if(jogos[idSala].jogador1.id != false & jogos[idSala].jogador2.id != false){
+            jogos[idSala].tirarTrunfo();
             jogos[idSala].darCartas();
-            console.log(jogos[idSala]);
+            jogos[idSala].turno = jogos[idSala].jogador1.id;
+
+            io.to(jogos[idSala].jogador1.id).emit("msg", `O trufo da partida é: ${jogos[idSala].trunfo}`);
+
             io.to(jogos[idSala].jogador1.id).emit("darcartas", jogos[idSala].jogador1, {nome: jogos[idSala].jogador2.nome, pontos: jogos[idSala].jogador2.pontos});
             io.to(jogos[idSala].jogador2.id).emit("darcartas", jogos[idSala].jogador2, {nome: jogos[idSala].jogador1.nome, pontos: jogos[idSala].jogador1.pontos});
         }else{
@@ -76,21 +80,28 @@ io.on('connection', function(socket){
     });
 
     socket.on('jogarCarta', (jogada) =>{
-        /* if(game.status && jogada.idPlayer == game.turnoPlayer){
-            if(jogada.idPlayer == player1.id){
-                game.turnoPlayer = player2.id;
-                player1.jogada = player1.mao[jogada.indice];
-                player1.mao.splice(jogada.indice, 1);
-                let indiceConcat = `${player1.ordem}${jogada.indice}`;
-                io.emit('cartaJogada', player1.jogada, indiceConcat);
-            }else if(jogada.idPlayer == player2.id){
-                game.turnoPlayer = player1.id;
-                player2.jogada = player2.mao[jogada.indice];
-                player2.mao.splice(jogada.indice, 1);
-                let indiceConcat = `${player2.ordem}${jogada.indice}`;
-                io.emit('cartaJogada', player2.jogada, indiceConcat);
+        if(jogos[jogada.idSala].turno == socket.id){
+            if(jogos[jogada.idSala].jogador1.id == socket.id){
+                jogos[jogada.idSala].turno = jogos[jogada.idSala].jogador2.id;
+                jogos[jogada.idSala].jogador1.jogada = jogos[jogada.idSala].jogador1.mao[jogada.indice];
+                jogos[jogada.idSala].jogador1.mao.splice(jogada.indice, 1);
+                
+                socket.emit('removerCartaMao', jogada.indice);
+                io.to(jogos[jogada.idSala].jogador2.id).emit("removerCartaAdversario");
+                io.emit('cartaJogada', jogos[jogada.idSala].jogador1.jogada);
+
+            }else if(jogos[jogada.idSala].jogador2.id == socket.id){
+                jogos[jogada.idSala].turno = 1;
+                jogos[jogada.idSala].jogador2.jogada = jogos[jogada.idSala].jogador2.mao[jogada.indice];
+                jogos[jogada.idSala].jogador2.mao.splice(jogada.indice, 1);
+                
+                socket.emit('removerCartaMao', jogada.indice);
+                io.to(jogos[jogada.idSala].jogador1.id).emit("removerCartaAdversario");
+                io.emit('cartaJogada', jogos[jogada.idSala].jogador2.jogada);
             }
-        } */
+        }else{
+            socket.emit("msg", "A vez é do outro jogador!");
+        }
     });
 
     socket.on('calcularRodada', () => {

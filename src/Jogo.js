@@ -46,6 +46,7 @@ class Jogo{
             ["as", "paus", "11", 10]
         ];
         this.trunfo = '';
+        this.turno = '';
         this.jogador1 = {
             id: false,
             nome: "",
@@ -105,6 +106,13 @@ class Jogo{
             this.jogador2.mao.push(this.baralho[this.num]);
             this.baralho.splice(this.num, 1);
         }
+    }
+
+    tirarTrunfo(){
+        let naipes = ['copas', 'paus', 'ouros', 'espadas'];
+        let num = Math.floor(Math.random() * 4);
+
+        this.trunfo = naipes[num];
     }
 
     comprarCartas(){

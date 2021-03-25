@@ -90,7 +90,7 @@ button:hover{
     display: flex;
 }
 
-.mao img{
+.mao img, #jogada img{
     height: 200px;
     width: 150px;
     margin: 0 20px;
