@@ -10,8 +10,8 @@ socket.on('connect', () =>{
     console.log(socket);
 });
 
-socket.on('darcartas', function(player){
-    darCartas(player);
+socket.on('darcartas', function(jogador, adversario){
+    darCartas(jogador, adversario);
 });
 
 socket.on('cartaJogada', function(jogada, indice){
@@ -30,13 +30,12 @@ socket.on('msg', function(msg){
     alert(msg);
 });
 
-function darCartas(player){
-    $("#mao").html("");
-    $("#maoOponente").html("");
+function darCartas(jogador, adversario){
     $('#iniciar').css("display", "none");
+    $('#placar').html(`<h2>Placar </h2><p>${jogador.nome}: ${jogador.pontos}</p><p>${adversario.nome}: ${adversario.pontos}</p>`);
 
     for(let i=0; i<player.mao.length; i++){
-        $("#mao").append(`<img src="imagens/cartas/${player.mao[i][0]}${player.mao[i][1]}.png" alt="" class="carta" id="${player.ordem}${i}" onClick="jogarCarta(${i})">`);
+        $("#mao").append(`<img src="imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${jogador.ordem}${i}" onClick="jogarCarta(${i})">`);
         $("#maoOponente").append(`<img src="imagens/cartas/verso.png" class="carta" id=""></img>`);
     }
     $("#calcrodada").html('<button class="calcularRodada" onClick="calcularRodada()">CalcularRodada</button>');
@@ -128,4 +127,5 @@ function gerarTelaPartida(){
             </section>\
         </main>\
     ');
+    //$('#tela').css("background-color", "#");
 }

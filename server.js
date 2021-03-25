@@ -68,8 +68,8 @@ io.on('connection', function(socket){
         if(jogos[idSala].jogador1.id != false & jogos[idSala].jogador2.id != false){
             jogos[idSala].darCartas();
             console.log(jogos[idSala]);
-            io.to(jogos[idSala].jogador1.id).emit("darcartas", jogos[idSala].jogador1);
-            io.to(jogos[idSala].jogador2.id).emit("darcartas", jogos[idSala].jogador2);
+            io.to(jogos[idSala].jogador1.id).emit("darcartas", jogos[idSala].jogador1, {nome: jogos[idSala].jogador2.nome, pontos: jogos[idSala].jogador2.pontos});
+            io.to(jogos[idSala].jogador2.id).emit("darcartas", jogos[idSala].jogador2, {nome: jogos[idSala].jogador1.nome, pontos: jogos[idSala].jogador1.pontos});
         }else{
             socket.emit('msg', 'Falta a entrada do adversário para iniciar a partida!');
         }

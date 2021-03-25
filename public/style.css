@@ -81,7 +81,7 @@ button:hover{
     justify-content: space-between;
 }
 
-.player{
+.player, .jogadas, .oponente{
     display: flex;
     justify-content: center;
 }
