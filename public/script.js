@@ -1,7 +1,8 @@
 var socket = io("http://localhost:3000", resgatarGET());
 
 var id = "";
-var idSala = ";"
+var idSala = "";
+var nomeJogador = "";
 
 socket.on('connect', () =>{
     id = socket.id;
@@ -79,7 +80,8 @@ function resgatarGET(){
 function criarSala(event){
     event.preventDefault();
     idSala = document.getElementById("idCriarSala").value;
-    socket.emit('criarSala', idSala);
+    nomeJogador = document.getElementById("nomeCriador").value;
+    socket.emit('criarSala', {idSala: idSala, nomeJogador: nomeJogador});
     limparTela();
     gerarTelaPartida();
 }
@@ -87,7 +89,8 @@ function criarSala(event){
 function entrarSala(event){
     event.preventDefault();
     idSala = document.getElementById("idEntrarSala").value;
-    socket.emit('entrarSala', idSala);
+    nomeJogador = document.getElementById("nomeConectar").value;
+    socket.emit('entrarSala', {idSala: idSala, nomeJogador: nomeJogador});
     limparTela();
     gerarTelaPartida();
 }

@@ -48,12 +48,14 @@ class Jogo{
         this.trunfo = '';
         this.jogador1 = {
             id: false,
+            nome: "",
             mao: [],
             jogada: [],
             pontos: 0
         };
         this.jogador2 = {
             id: false,
+            nome: "",
             mao: [],
             jogada: [],
             pontos: 0

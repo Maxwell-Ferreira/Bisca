@@ -40,23 +40,27 @@ app.get('/sala', urlencodedParser, (req, res) =>{
 io.on('connection', function(socket){
     console.log(`Socket conectado -> id:${socket.id}`);
     
-    socket.on('criarSala', (idSala) => {
-        if(!jogos[idSala]){
-            let jogo = new Jogo(idSala);
+    socket.on('criarSala', (dados) => {
+        if(!jogos[dados.idSala]){
+            let jogo = new Jogo(dados.idSala);
             jogo.jogador1.id = socket.id;
-            jogos[idSala] = jogo;
+            jogo.jogador1.nome = dados.nomeJogador;
+            jogos[dados.idSala] = jogo;
         }else{
             socket.emit("msg", "Sala já existe!");
         }
     });
 
-    socket.on('entrarSala', (idSala) => {
-        if(jogos[idSala]){
-            if(jogos[idSala].jogador2.id){
+    socket.on('entrarSala', (dados) => {
+        if(jogos[dados.idSala]){
+            if(jogos[dados.idSala].jogador2.id){
                 socket.emit("msg", "Sala cheia!");
             }else{
-                jogos[idSala].jogador2.id = socket.id;
+                jogos[dados.idSala].jogador2.id = socket.id;
+                jogos[dados.idSala].jogador2.nome = dados.nomeJogador;
             }
+        }else{
+            socket.emit("msg", "Sala informada não existe!");
         }
     });
 
@@ -66,6 +70,8 @@ io.on('connection', function(socket){
             console.log(jogos[idSala]);
             io.to(jogos[idSala].jogador1.id).emit("darcartas", jogos[idSala].jogador1);
             io.to(jogos[idSala].jogador2.id).emit("darcartas", jogos[idSala].jogador2);
+        }else{
+            socket.emit('msg', 'Falta a entrada do adversário para iniciar a partida!');
         }
     });
 

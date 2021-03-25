@@ -18,6 +18,8 @@
                     <form id="form-criar" name="form-criar">
                         <label for="idSala"><h2>Criar Sala</h2></label>
                         <input type="text" name="idSala" id="idCriarSala" class="form-item">
+                        <label for="nomeCriador"><h2>Nome:</h2></label>
+                        <input type="text" name="nomeCriador" id="nomeCriador" class="form-item">
                         <button type="submit" class="btnCriar" class="form-item" onClick="criarSala(event)">Criar</button>
                     </form>
                 </section>
@@ -25,6 +27,8 @@
                     <form action="http://localhost:3000/sala" method="GET">
                         <label for="idSala"><h2>Conectar à uma Sala</h2></label>
                         <input type="text" name="idSala" id="idEntrarSala" class="form-item">
+                        <label for="nomeConectar"><h2>Nome:</h2></label>
+                        <input type="text" name="nomeConectar" id="nomeConectar" class="form-item">
                         <button type="submit" class="btnConectar" class="form-item" onClick="entrarSala(event)">Conectar</button>
                     </form>
                 </section>
