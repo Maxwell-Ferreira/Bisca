@@ -47,6 +47,8 @@ class Jogo{
         ];
         this.trunfo = '';
         this.turno = '';
+        this.numJogadas = 0;
+        this.statusAs = false;
         this.jogador1 = {
             id: false,
             nome: "",
@@ -135,6 +137,42 @@ class Jogo{
     rodadaJogador2(){
         this.jogador2.pontos += parseInt(this.jogador1.jogada[2]) + parseInt(this.jogador2.jogada[2]);
         this.turno = this.jogador2.id;
+    }
+
+    verificarAs(jogadorId, indice){
+        if(jogadorId == this.jogador1.id){
+            if(this.jogador1.mao[indice][1] == this.trunfo & this.jogador1.mao[indice][0] == "as"){
+                if(this.statusAs){
+                    return true;
+                }else{
+                    return false;
+                }
+            }else{
+                return true;
+            }
+        }else if(jogadorId == this.jogador2.id){
+            if(this.jogador2.mao[indice][1] == this.trunfo & this.jogador2.mao[indice][0] == "as"){
+                if(this.statusAs){
+                    return true;
+                }else{
+                    return false;
+                }
+            }else{
+                return true;
+            }
+        }        
+    }
+
+    isSete(jogadorId, indice){
+        if(jogadorId == this.jogador1.id){
+            if(this.jogador1.mao[indice][1] == this.trunfo & this.jogador1.mao[indice][0] == "7"){
+                this.statusAs = true;
+            }
+        }else if(jogadorId == this.jogador2.id){
+            if(this.jogador2.mao[indice][1] == this.trunfo & this.jogador2.mao[indice][0] == "7"){
+                this.statusAs = true;
+            }
+        }   
     }
 }
 

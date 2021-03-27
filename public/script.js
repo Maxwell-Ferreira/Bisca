@@ -49,6 +49,11 @@ socket.on('desconexao', function(msg){
     document.location.reload(true);
 })
 
+socket.on('finalizarPartida', function(msg){
+    alert(msg);
+    document.location.reload(true);
+})
+
 function criarSala(event){
     event.preventDefault();
     idSala = document.getElementById("idCriarSala").value;
