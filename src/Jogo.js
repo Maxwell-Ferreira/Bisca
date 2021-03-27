@@ -126,6 +126,16 @@ class Jogo{
         this.baralho.splice(this.num, 1);
         this.jogador2.jogada = [];
     }
+
+    rodadaJogador1(){
+        this.jogador1.pontos += parseInt(this.jogador1.jogada[2]) + parseInt(this.jogador2.jogada[2]);
+        this.turno = this.jogador1.id;
+    }
+
+    rodadaJogador2(){
+        this.jogador2.pontos += parseInt(this.jogador1.jogada[2]) + parseInt(this.jogador2.jogada[2]);
+        this.turno = this.jogador2.id;
+    }
 }
 
 module.exports = Jogo;

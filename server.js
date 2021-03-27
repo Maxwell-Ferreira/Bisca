@@ -46,6 +46,7 @@ io.on('connection', function(socket){
             jogo.jogador1.id = socket.id;
             jogo.jogador1.nome = dados.nomeJogador;
             jogos[dados.idSala] = jogo;
+            socket.emit("carregarSala");
         }else{
             socket.emit("msg", "Sala já existe!");
         }
@@ -58,6 +59,7 @@ io.on('connection', function(socket){
             }else{
                 jogos[dados.idSala].jogador2.id = socket.id;
                 jogos[dados.idSala].jogador2.nome = dados.nomeJogador;
+                socket.emit("carregarSala");
             }
         }else{
             socket.emit("msg", "Sala informada não existe!");
@@ -70,7 +72,7 @@ io.on('connection', function(socket){
             jogos[idSala].darCartas();
             jogos[idSala].turno = jogos[idSala].jogador1.id;
 
-            io.to(jogos[idSala].jogador1.id).emit("msg", `O trufo da partida é: ${jogos[idSala].trunfo}`);
+            io.emit("mostrarTrunfo", jogos[idSala].trunfo)
 
             io.to(jogos[idSala].jogador1.id).emit("darcartas", jogos[idSala].jogador1, {nome: jogos[idSala].jogador2.nome, pontos: jogos[idSala].jogador2.pontos});
             io.to(jogos[idSala].jogador2.id).emit("darcartas", jogos[idSala].jogador2, {nome: jogos[idSala].jogador1.nome, pontos: jogos[idSala].jogador1.pontos});
@@ -105,23 +107,24 @@ io.on('connection', function(socket){
     });
 
     socket.on('calcularRodada', (idSala) => {
-
         if(jogos[idSala].jogador1.jogada.length && jogos[idSala].jogador2.jogada.length){
             if(jogos[idSala].jogador1.jogada[1] == jogos[idSala].jogador2.jogada[1]){
                 if(jogos[idSala].jogador1.jogada[3] > jogos[idSala].jogador2.jogada[3]){
-                    jogos[idSala].jogador1.pontos += parseInt(jogos[idSala].jogador1.jogada[2]) + parseInt(jogos[idSala].jogador2.jogada[2]);
-                    jogos[idSala].turno = jogos[idSala].jogador1.id;
+                    jogos[idSala].rodadaJogador1();
                 }else{
-                    jogos[idSala].jogador2.pontos += parseInt(jogos[idSala].jogador1.jogada[2]) + parseInt(jogos[idSala].jogador2.jogada[2]);
-                    jogos[idSala].turno = jogos[idSala].jogador2.id;
+                    jogos[idSala].rodadaJogador2();
                 }
             }else{
-                if(jogos[idSala].jogador1.id == jogos[idSala].turno){
-                    jogos[idSala].jogador1.pontos += parseInt(jogos[idSala].jogador1.jogada[2]) + parseInt(jogos[idSala].jogador2.jogada[2]);
-                    jogos[idSala].turno = jogos[idSala].jogador1.id;
+                if(jogos[idSala].jogador1.jogada[1] == jogos[idSala].trunfo){
+                    jogos[idSala].rodadaJogador1();
+                }else if(jogos[idSala].jogador2.jogada[1] == jogos[idSala].trunfo){
+                    jogos[idSala].rodadaJogador2();
                 }else{
-                    jogos[idSala].jogador2.pontos += parseInt(jogos[idSala].jogador1.jogada[2]) + parseInt(jogos[idSala].jogador2.jogada[2]);
-                    jogos[idSala].turno = jogos[idSala].jogador2.id;
+                    if(jogos[idSala].jogador1.id == jogos[idSala].turno){
+                        jogos[idSala].rodadaJogador1();
+                    }else{
+                        jogos[idSala].rodadaJogador2();
+                    }
                 }
             }
 
@@ -133,13 +136,15 @@ io.on('connection', function(socket){
     });
 
     socket.on('disconnect', () =>{
-        /* if(socket.id == player1.id){
-            player1.id = null,
-            player1.mao = [];
-        }else if(socket.id == player2.id){
-            player2.id = null,
-            player2.mao = [];
-        } */
+        for(var jogo in jogos){
+            if(jogos[jogo].jogador1.id == socket.id){
+                io.to(jogos[jogo].jogador2.id).emit("desconexao", `${jogos[jogo].jogador1.nome} se desconectou! A partida foi encerrada :(`);
+                break;
+            }else if(jogos[jogo].jogador2.id == socket.id){
+                io.to(jogos[jogo].jogador1.id).emit("desconexao", `${jogos[jogo].jogador2.nome} se desconectou! A partida foi encerrada :(`);
+                break;
+            }
+        }
         console.log(`Socket desconectado -> id: ${socket.id}`);
     })
 });

@@ -1,5 +1,4 @@
-var socket = io("http://37936e9eae6b.ngrok.io", resgatarGET());
-const URL = "http://37936e9eae6b.ngrok.io/";
+var socket = io("http://localhost:3000", resgatarGET());
 
 var id = "";
 var idSala = "";
@@ -9,6 +8,16 @@ socket.on('connect', () =>{
     id = socket.id;
 
     console.log(socket);
+});
+
+socket.on('carregarSala', function(){
+    limparTela();
+    gerarTelaPartida();
+})
+
+socket.on('mostrarTrunfo', function(trunfo){
+    alert(`O trunfo da partida é: ${trunfo}`);
+    mostrarTrunfo(trunfo);
 });
 
 socket.on('darcartas', function(jogador, adversario){
@@ -35,11 +44,44 @@ socket.on('msg', function(msg){
     alert(msg);
 });
 
+socket.on('desconexao', function(msg){
+    alert(msg);
+    document.location.reload(true);
+})
+
+function criarSala(event){
+    event.preventDefault();
+    idSala = document.getElementById("idCriarSala").value;
+    nomeJogador = document.getElementById("nomeCriador").value;
+    socket.emit('criarSala', {idSala: idSala, nomeJogador: nomeJogador});
+}
+
+function entrarSala(event){
+    event.preventDefault();
+    idSala = document.getElementById("idEntrarSala").value;
+    nomeJogador = document.getElementById("nomeConectar").value;
+    socket.emit('entrarSala', {idSala: idSala, nomeJogador: nomeJogador});
+}
+
+function limparTela(){
+    $('#tela').html('');
+}
+
+function iniciarPartida(event){
+    event.preventDefault();
+    socket.emit("iniciarPartida", idSala);
+}
+
+function mostrarTrunfo(trunfo){
+    $('#trunfo').html(`Trunfo: ${trunfo}`);
+}
+
 function darCartas(jogador, adversario){
     $('#iniciar').css("display", "none");
     $('#placar').html(`<h2>Placar </h2><p>${jogador.nome}: ${jogador.pontos}</p><p>${adversario.nome}: ${adversario.pontos}</p>`);
     $('#mao').html('');
     $('#maoOponente').html('');
+    reproduzirAudio();
 
     for(let i=0; i<jogador.mao.length; i++){
         $("#mao").append(`<img src="imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${i}" onClick="jogarCarta(${i})">`);
@@ -55,10 +97,12 @@ function jogarCarta(indice){
 
 function removerCartaJogada(indice){
     $("#"+indice).css("display", "none");
+    reproduzirAudio();
 }
 
 function removerCartaAdversario(){
     $("#op"+1).css("display", "none");
+    reproduzirAudio();
 }
 
 function renderJogarCarta(jogada){
@@ -86,39 +130,21 @@ function resgatarGET(){
     return data;
 }
 
-function criarSala(event){
-    event.preventDefault();
-    idSala = document.getElementById("idCriarSala").value;
-    nomeJogador = document.getElementById("nomeCriador").value;
-    socket.emit('criarSala', {idSala: idSala, nomeJogador: nomeJogador});
-    limparTela();
-    gerarTelaPartida();
-}
-
-function entrarSala(event){
-    event.preventDefault();
-    idSala = document.getElementById("idEntrarSala").value;
-    nomeJogador = document.getElementById("nomeConectar").value;
-    socket.emit('entrarSala', {idSala: idSala, nomeJogador: nomeJogador});
-    limparTela();
-    gerarTelaPartida();
-}
-
-function limparTela(){
-    $('#tela').html('');
-}
-
-function iniciarPartida(event){
-    event.preventDefault();
-    socket.emit("iniciarPartida", idSala);
+function reproduzirAudio(){
+    let audio = document.querySelector('#audio');
+    audio.play();
 }
 
 function gerarTelaPartida(){
+    $('#tela').css("background-image", "url('imagens/background.jpg')");
     $('#tela').html('\
         <main class="partida">\
             <section class="menu">\
-                <h1>Bisca</h1>\
-                <div class="placar" id="placar"></div>\
+                <h1>Bisca Braba</h1>\
+                <div id="informacoes">\
+                    <p id="trunfo"></p>\
+                    <div id="placar"></div>\
+                </div>\
                 <button id="iniciar" class="iniciarpartida" onClick="iniciarPartida(event)">Iniciar Partida</button>\
                 <div id="calcrodada"></div>\
             </section>\
@@ -132,10 +158,11 @@ function gerarTelaPartida(){
                 </div>\
                 <div class="player">\
                     <div class="mao" id="mao">\
+                        <img src=""/>\
                     </div>\
                 </div>\
             </section>\
+            <audio id="audio" src="audios/carta.weba"></audio>\
         </main>\
     ');
-    //$('#tela').css("background-color", "#");
 }

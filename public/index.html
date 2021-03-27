@@ -12,22 +12,24 @@
 <body>
     <div id="tela">
         <main class="home">
-            <h1>Bisca</h1>
+            <h1>Bisca Braba</h1>
             <div class="sections">
-                <section>
+                <section class="home-section">
                     <form id="form-criar" name="form-criar">
-                        <label for="idSala"><h2>Criar Sala</h2></label>
+                        <h2>Criar Sala</h2>
+                        <label for="idSala">ID da Sala:</label>
                         <input type="text" name="idSala" id="idCriarSala" class="form-item">
-                        <label for="nomeCriador"><h2>Nome:</h2></label>
+                        <label for="nomeCriador">Seu nome:</label>
                         <input type="text" name="nomeCriador" id="nomeCriador" class="form-item">
                         <button type="submit" class="btnCriar" class="form-item" onClick="criarSala(event)">Criar</button>
                     </form>
                 </section>
-                <section>
+                <section class="home-section">
                     <form action="http://localhost:3000/sala" method="GET">
-                        <label for="idSala"><h2>Conectar à uma Sala</h2></label>
+                        <h2>Conectar à uma Sala</h2>
+                        <label for="idSala">ID da Sala:</label>
                         <input type="text" name="idSala" id="idEntrarSala" class="form-item">
-                        <label for="nomeConectar"><h2>Nome:</h2></label>
+                        <label for="nomeConectar">Seu nome:</label>
                         <input type="text" name="nomeConectar" id="nomeConectar" class="form-item">
                         <button type="submit" class="btnConectar" class="form-item" onClick="entrarSala(event)">Conectar</button>
                     </form>
