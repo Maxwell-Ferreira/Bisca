@@ -89,8 +89,8 @@ function darCartas(jogador, adversario){
     reproduzirAudio();
 
     for(let i=0; i<jogador.mao.length; i++){
-        $("#mao").append(`<img src="imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${i}" onClick="jogarCarta(${i})">`);
-        $("#maoOponente").append(`<img src="imagens/cartas/verso.png" class="carta" id="op${i}"></img>`);
+        $("#mao").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${i}" onClick="jogarCarta(${i})">`);
+        $("#maoOponente").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/verso.png" class="carta" id="op${i}"></img>`);
     }
     $("#calcrodada").html('<button class="calcularRodada" onClick="calcularRodada()">CalcularRodada</button>');
 }
@@ -111,7 +111,7 @@ function removerCartaAdversario(){
 }
 
 function renderJogarCarta(jogada){
-    $("#jogada").append(`<img src="imagens/cartas/${jogada[0]}${jogada[1]}.png" class="carta">`);
+    $("#jogada").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/${jogada[0]}${jogada[1]}.png" class="carta">`);
 }
 
 function calcularRodada(){
