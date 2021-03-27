@@ -1,4 +1,5 @@
-var socket = io("http://localhost:3000", resgatarGET());
+var socket = io("http://37936e9eae6b.ngrok.io", resgatarGET());
+const URL = "http://37936e9eae6b.ngrok.io/";
 
 var id = "";
 var idSala = "";
@@ -30,10 +31,6 @@ socket.on('limparMesa', function(){
     limparMesa();
 });
 
-socket.on('atualizarPlacar', function(placar){
-    atualizarPlacar(placar);
-});
-
 socket.on('msg', function(msg){
     alert(msg);
 });
@@ -41,6 +38,8 @@ socket.on('msg', function(msg){
 function darCartas(jogador, adversario){
     $('#iniciar').css("display", "none");
     $('#placar').html(`<h2>Placar </h2><p>${jogador.nome}: ${jogador.pontos}</p><p>${adversario.nome}: ${adversario.pontos}</p>`);
+    $('#mao').html('');
+    $('#maoOponente').html('');
 
     for(let i=0; i<jogador.mao.length; i++){
         $("#mao").append(`<img src="imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${i}" onClick="jogarCarta(${i})">`);
@@ -67,15 +66,11 @@ function renderJogarCarta(jogada){
 }
 
 function calcularRodada(){
-    socket.emit('calcularRodada');
+    socket.emit('calcularRodada', idSala);
 }
 
 function limparMesa(){
     $("#jogada").html("");
-}
-
-function atualizarPlacar(placar){
-    $("#placar").html(`Placar:<br/> Jogador 1:${placar.player1}</br>Jogador 2: ${placar.player2}`);
 }
 
 function resgatarGET(){

@@ -91,7 +91,7 @@ io.on('connection', function(socket){
                 io.emit('cartaJogada', jogos[jogada.idSala].jogador1.jogada);
 
             }else if(jogos[jogada.idSala].jogador2.id == socket.id){
-                jogos[jogada.idSala].turno = 1;
+                jogos[jogada.idSala].turno = jogos[jogada.idSala].jogador1.id;
                 jogos[jogada.idSala].jogador2.jogada = jogos[jogada.idSala].jogador2.mao[jogada.indice];
                 jogos[jogada.idSala].jogador2.mao.splice(jogada.indice, 1);
                 
@@ -104,32 +104,31 @@ io.on('connection', function(socket){
         }
     });
 
-    socket.on('calcularRodada', () => {
-        if(player1.jogada.length && player2.jogada.length){
-            if(player1.jogada[1] == player2.jogada[1]){
-                if(player1.jogada[3] > player2.jogada[3]){
-                    player1.pontos += parseInt(player1.jogada[2]) + parseInt(player2.jogada[2]);
-                    game.turnoPlayer = player1.id;
+    socket.on('calcularRodada', (idSala) => {
+
+        if(jogos[idSala].jogador1.jogada.length && jogos[idSala].jogador2.jogada.length){
+            if(jogos[idSala].jogador1.jogada[1] == jogos[idSala].jogador2.jogada[1]){
+                if(jogos[idSala].jogador1.jogada[3] > jogos[idSala].jogador2.jogada[3]){
+                    jogos[idSala].jogador1.pontos += parseInt(jogos[idSala].jogador1.jogada[2]) + parseInt(jogos[idSala].jogador2.jogada[2]);
+                    jogos[idSala].turno = jogos[idSala].jogador1.id;
                 }else{
-                    player2.pontos += parseInt(player1.jogada[2]) + parseInt(player2.jogada[2]);
-                    game.turnoPlayer = player2.id;
+                    jogos[idSala].jogador2.pontos += parseInt(jogos[idSala].jogador1.jogada[2]) + parseInt(jogos[idSala].jogador2.jogada[2]);
+                    jogos[idSala].turno = jogos[idSala].jogador2.id;
                 }
             }else{
-                if(player1.id == game.turnoPlayer){
-                    player1.pontos += parseInt(player1.jogada[2]) + parseInt(player2.jogada[2]);
-                    game.turnoPlayer = player1.id;
+                if(jogos[idSala].jogador1.id == jogos[idSala].turno){
+                    jogos[idSala].jogador1.pontos += parseInt(jogos[idSala].jogador1.jogada[2]) + parseInt(jogos[idSala].jogador2.jogada[2]);
+                    jogos[idSala].turno = jogos[idSala].jogador1.id;
                 }else{
-                    player2.pontos += parseInt(player1.jogada[2]) + parseInt(player2.jogada[2]);
-                    game.turnoPlayer = player2.id;
+                    jogos[idSala].jogador2.pontos += parseInt(jogos[idSala].jogador1.jogada[2]) + parseInt(jogos[idSala].jogador2.jogada[2]);
+                    jogos[idSala].turno = jogos[idSala].jogador2.id;
                 }
             }
-            player1.comprarCarta();
-            player2.comprarCarta();
-            io.to(player1.id).emit("darcartas", player1);
-            io.to(player2.id).emit("darcartas", player2);
+
+            jogos[idSala].comprarCartas();
+            io.to(jogos[idSala].jogador1.id).emit("darcartas", jogos[idSala].jogador1, {nome: jogos[idSala].jogador2.nome, pontos: jogos[idSala].jogador2.pontos});
+            io.to(jogos[idSala].jogador2.id).emit("darcartas", jogos[idSala].jogador2, {nome: jogos[idSala].jogador1.nome, pontos: jogos[idSala].jogador1.pontos});
             io.emit('limparMesa');
-            let placar = {player1: player1.pontos, player2: player2.pontos};
-            io.emit('atualizarPlacar', placar);
         }
     });
 

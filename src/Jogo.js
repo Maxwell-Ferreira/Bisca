@@ -117,9 +117,14 @@ class Jogo{
 
     comprarCartas(){
         this.num = Math.floor(Math.random() * (this.baralho.length));
-        this.player1.mao.push(this.baralho[this.num]);
+        this.jogador1.mao.push(this.baralho[this.num]);
         this.baralho.splice(this.num, 1);
-        this.player1.jogada = [];
+        this.jogador1.jogada = [];
+
+        this.num = Math.floor(Math.random() * (this.baralho.length));
+        this.jogador2.mao.push(this.baralho[this.num]);
+        this.baralho.splice(this.num, 1);
+        this.jogador2.jogada = [];
     }
 }
 
