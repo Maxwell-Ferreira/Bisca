@@ -1,4 +1,5 @@
-var socket = io("https://biscabraba.herokuapp.com");
+//var socket = io("https://biscabraba.herokuapp.com");
+var socket = io("http://localhost:3000");
 
 var id = "";
 var idSala = "";

@@ -161,9 +161,11 @@ io.on('connection', function(socket){
         for(var jogo in jogos){
             if(jogos[jogo].jogador1.id == socket.id){
                 io.to(jogos[jogo].jogador2.id).emit("desconexao", `${jogos[jogo].jogador1.nome} se desconectou! A partida foi encerrada :(`);
+                delete(jogos[jogo]);
                 break;
             }else if(jogos[jogo].jogador2.id == socket.id){
                 io.to(jogos[jogo].jogador1.id).emit("desconexao", `${jogos[jogo].jogador2.nome} se desconectou! A partida foi encerrada :(`);
+                delete(jogos[jogo]);
                 break;
             }
         }
