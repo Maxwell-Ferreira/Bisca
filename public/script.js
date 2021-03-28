@@ -97,7 +97,7 @@ function darCartas(jogador, adversario){
 }
 
 function jogarCarta(indice){
-    let jogada = {idSala: idSala, indice: indice};
+    let jogada = {idSala: idSala, indice: `${indice}`};
     socket.emit("jogarCarta", jogada);
 }
 
