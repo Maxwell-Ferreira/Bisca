@@ -1,4 +1,5 @@
-var socket = io("https://biscabraba.herokuapp.com");
+//var socket = io("https://biscabraba.herokuapp.com");
+var socket = io("http://localhost:3000");
 
 var id = "";
 var idSala = "";
@@ -41,11 +42,17 @@ socket.on('limparMesa', function(){
 });
 
 socket.on('msg', function(msg){
-    alert(msg);
+    reproduzirAudio("nope");
+    setTimeout(() => {
+        alert(msg);
+    }, 200);
 });
 
 socket.on('desconexao', function(msg){
-    alert(msg);
+    reproduzirAudio("oh_no");
+    setTimeout(() => {
+        alert(msg);
+    }, 200);
     document.location.reload(true);
 })
 
@@ -102,12 +109,12 @@ function jogarCarta(indice){
 
 function removerCartaJogada(indice){
     $("#"+indice).css("display", "none");
-    reproduzirAudio();
+    reproduzirAudio("carta");
 }
 
 function removerCartaAdversario(){
     $("#op"+1).css("display", "none");
-    reproduzirAudio();
+    reproduzirAudio("carta");
 }
 
 function renderJogarCarta(jogada){
@@ -135,8 +142,9 @@ function resgatarGET(){
     return data;
 }
 
-function reproduzirAudio(){
+function reproduzirAudio(src){
     let audio = document.querySelector('#audio');
+    $('#audio').attr("src", `audios/${src}.weba`);
     audio.play();
 }
 
@@ -163,7 +171,6 @@ function gerarTelaPartida(){
                 </div>\
                 <div class="player">\
                     <div class="mao" id="mao">\
-                        <img src=""/>\
                     </div>\
                 </div>\
             </section>\
