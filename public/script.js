@@ -52,7 +52,9 @@ socket.on('desconexao', function(msg){
     setTimeout(() => {
         alert(msg);
     }, 200);
-    document.location.reload(true);
+    setTimeout(() => {
+        document.location.reload(true);
+    }, 1500);
 })
 
 socket.on('finalizarPartida', function(msg){
