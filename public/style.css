@@ -157,6 +157,7 @@ button:hover{
     width: 20%;
     height: calc(100% - 20px);
     box-shadow: -5px 0 10px #000;
+    overflow-y: scroll;
 }
 
 .chat h2{
