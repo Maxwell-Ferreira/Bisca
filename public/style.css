@@ -157,7 +157,6 @@ button:hover{
     width: 20%;
     height: calc(100% - 20px);
     box-shadow: -5px 0 10px #000;
-    overflow-y: scroll;
 }
 
 .chat h2{
@@ -171,6 +170,7 @@ button:hover{
     background-color: rgb(255, 251, 230);
     border-radius: 4px;
     padding: 8px 10px;
+    overflow-y: scroll;
 }
 
 .form-mensagem{
