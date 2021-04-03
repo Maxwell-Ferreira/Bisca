@@ -27,7 +27,7 @@ body{
 }
 
 h1{
-    font-size: 4rem;
+    font-size: 3rem;
     text-shadow: 5px 5px 5px #000;
 }
 
@@ -69,7 +69,7 @@ input, select{
     border: 1px solid rgb(179, 179, 179);
     border-radius: 4px;
     padding: .4rem;
-    font-size: 1rem;
+    font-size: .9rem;
 }
 select{
     margin-left: auto;
@@ -190,6 +190,7 @@ button:hover{
 .form-mensagem input{
     height: 1rem;
     width: calc(100% - 60px);
+    font-size: .9rem;
 }
 
 .mensagem{
