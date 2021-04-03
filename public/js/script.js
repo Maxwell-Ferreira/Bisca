@@ -209,6 +209,8 @@ function mostrarMensagem(mensagem){
         <div class="mensagem">
             <strong>${mensagem.jogador}</strong>: ${mensagem.texto}
         </div>`);
+    var divMensagens = document.getElementById("mensagens");
+    divMensagens.scrollTop = divMensagens.scrollHeight;
 }
 
 function exibirVencedor(vencedor){
