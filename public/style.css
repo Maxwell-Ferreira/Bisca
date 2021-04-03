@@ -9,7 +9,7 @@ html, body{
 body{
     background-image: url("imagens/bg_home.jpg");
     background-size: 100%;
-    font-size: 22px;
+    font-size: 16px;
     position: relative;
     overflow: hidden;
 }
