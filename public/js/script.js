@@ -3,29 +3,42 @@ var socket = io("https://biscabraba.herokuapp.com");
 var id = "";
 var idSala = "";
 var nomeJogador = "";
+var formChat;
 
 socket.on('connect', () =>{
     id = socket.id;
-
-    console.log(socket);
+    console.log(id);
 });
 
-socket.on('carregarSala', function(){
+socket.on('carregarSala', function(jogadores){
     limparTela();
     gerarTelaPartida();
+    addJogadorLista(jogadores);
 })
 
-socket.on('mostrarTrunfo', function(trunfo){
-    alert(`O trunfo da partida é: ${trunfo}`);
-    mostrarTrunfo(trunfo);
+socket.on('novoJogador', (players) => {
+    reproduzirAudio("nice");
+    setTimeout(() => {
+        alert(`${players[0].nome} se conectou!! :D`);
+    }, 250);
+    addJogadorLista(players);
 });
 
-socket.on('darcartas', function(jogador, adversario){
-    darCartas(jogador, adversario);
+socket.on('iniciarPartida', function(dados){
+    alert(`O trunfo da partida é: ${dados.jogoEstado.trunfo}`);
+    mostrarTrunfo(dados.jogoEstado.trunfo);
+    darCartas(dados.jogador);
 });
 
-socket.on('cartaJogada', function(jogada){
+socket.on('jogarCarta', function(jogada){
     renderJogarCarta(jogada);
+});
+
+socket.on('cartaJogada', (msg) => {
+    reproduzirAudio("cartoon_slip");
+    setTimeout(() => {
+        alert(msg);
+    }, 200);
 });
 
 socket.on('removerCartaMao', function(indice){
@@ -36,7 +49,8 @@ socket.on('removerCartaAdversario', function(){
     removerCartaAdversario();
 });
 
-socket.on('limparMesa', function(){
+socket.on('calcularRodada', function(jogador){
+    darCartas(jogador);
     limparMesa();
 });
 
@@ -45,6 +59,14 @@ socket.on('msg', function(msg){
     setTimeout(() => {
         alert(msg);
     }, 200);
+});
+
+socket.on('removerJogador', (nome) =>{
+    reproduzirAudio("oh_no");
+    setTimeout(() => {
+        alert(`${nome} se desconectou! :(`);
+    }, 200);
+    removerJogador(nome);
 });
 
 socket.on('desconexao', function(msg){
@@ -62,11 +84,21 @@ socket.on('finalizarPartida', function(msg){
     document.location.reload(true);
 })
 
+socket.on('mensagem', mensagem => {
+    mostrarMensagem(mensagem);
+});
+
+socket.on('vencedor', vencedor => {
+    exibirVencedor(vencedor);
+});
+
 function criarSala(event){
     event.preventDefault();
-    idSala = document.getElementById("idCriarSala").value;
-    nomeJogador = document.getElementById("nomeCriador").value;
-    socket.emit('criarSala', {idSala: idSala, nomeJogador: nomeJogador});
+    var idSala = document.getElementById("idCriarSala").value;
+    var nomeJogador = document.getElementById("nomeCriador").value;
+    var select = document.getElementById("numJogadores");
+    var numJogadores = select.options[select.selectedIndex].value;
+    socket.emit('criarSala', {idSala: idSala, nomeJogador: nomeJogador, numJogadores: numJogadores});
 }
 
 function entrarSala(event){
@@ -76,22 +108,33 @@ function entrarSala(event){
     socket.emit('entrarSala', {idSala: idSala, nomeJogador: nomeJogador});
 }
 
+function addJogadorLista(jogadores){
+    for(var i=0; i<jogadores.length; i++){
+        $('#listaJogadores').append(`<p id="${jogadores[i].nome}">${jogadores[i].nome}</p>`);
+    }
+}
+
+function removerJogador(nome){
+    document.getElementById(nome).remove();
+}
+
 function limparTela(){
     $('#tela').html('');
 }
 
 function iniciarPartida(event){
     event.preventDefault();
-    socket.emit("iniciarPartida", idSala);
+    socket.emit("iniciarPartida");
 }
 
 function mostrarTrunfo(trunfo){
     $('#trunfo').html(`Trunfo: ${trunfo}`);
 }
 
-function darCartas(jogador, adversario){
+function darCartas(jogador){
     $('#iniciar').css("display", "none");
-    $('#placar').html(`<h2>Placar </h2><p>${jogador.nome}: ${jogador.pontos}</p><p>${adversario.nome}: ${adversario.pontos}</p>`);
+    $('#placar').html(`<h2>Minha pontuação</h2><p>${jogador.nome}: ${jogador.pontos} pontos</p>`);
+
     $('#mao').html('');
     $('#maoOponente').html('');
     reproduzirAudio();
@@ -100,11 +143,11 @@ function darCartas(jogador, adversario){
         $("#mao").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${i}" onClick="jogarCarta(${i})">`);
         $("#maoOponente").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/verso.png" class="carta" id="op${i}"></img>`);
     }
-    $("#calcrodada").html('<button class="calcularRodada" onClick="calcularRodada()">CalcularRodada</button>');
+    $("#pronto").html('<button class="calcularRodada" onClick="pronto()">Pronto</button>');
 }
 
 function jogarCarta(indice){
-    let jogada = {idSala: idSala, indice: `${indice}`};
+    let jogada = indice;
     socket.emit("jogarCarta", jogada);
 }
 
@@ -120,10 +163,14 @@ function removerCartaAdversario(){
 
 function renderJogarCarta(jogada){
     $("#jogada").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/${jogada[0]}${jogada[1]}.png" class="carta">`);
+    var num = Math.floor(Math.random() * 20);
+    if(num === 10){
+        toasty();
+    }
 }
 
-function calcularRodada(){
-    socket.emit('calcularRodada', idSala);
+function pronto(){
+    socket.emit('pronto');
 }
 
 function limparMesa(){
@@ -149,8 +196,37 @@ function reproduzirAudio(src){
     audio.play();
 }
 
+function enviarMensagem(e){
+    e.preventDefault();
+    var getMensagem = document.getElementById("enviarMsg");
+    var mensagem = getMensagem.value;
+    getMensagem.value = "";
+    socket.emit('mensagem', mensagem);
+}
+
+function mostrarMensagem(mensagem){
+    $('#mensagens').append(`
+        <div class="mensagem">
+            <strong>${mensagem.jogador}</strong>: ${mensagem.texto}
+        </div>`);
+}
+
+function exibirVencedor(vencedor){
+    reproduzirAudio('foguete');
+    console.log(vencedor);
+
+    var texto = 'Partida terminada! Os vencedores são: ';
+    for(var i=0; i<vencedor.jogadores.length; i++){
+        texto = texto + " * " + vencedor.jogadores[i] + " * ";
+    }
+    texto = texto + " com " + vencedor.pontos + " pontos!";
+    setTimeout(() => {
+        alert(texto);
+    }, 300);
+}
+
 function gerarTelaPartida(){
-    $('#tela').css("background-image", "url('imagens/background.jpg')");
+    $('#tela').css("background-color", "rgb(33, 80, 47)");
     $('#tela').html('\
         <main class="partida">\
             <section class="menu">\
@@ -160,7 +236,8 @@ function gerarTelaPartida(){
                     <div id="placar"></div>\
                 </div>\
                 <button id="iniciar" class="iniciarpartida" onClick="iniciarPartida(event)">Iniciar Partida</button>\
-                <div id="calcrodada"></div>\
+                <div id="pronto"></div>\
+                <div id="listaJogadores"><p style="border-bottom: 1px solid #fff; margin-bottom: 1rem;">Jogadores Conectados</p></div>\
             </section>\
             <section class="game">\
                 <div class="oponente">\
@@ -174,6 +251,14 @@ function gerarTelaPartida(){
                     <div class="mao" id="mao">\
                     </div>\
                 </div>\
+            </section>\
+            <section class="chat">\
+                <h2>Chat</h2>\
+                <div id="mensagens" class="mensagens"></div>\
+                <form id="form-mensagem" class="form-mensagem" onSubmit="enviarMensagem(event)">\
+                    <input type="text" id="enviarMsg" autocomplete="off" placeholder="Enviar mensagem..." maxlength="255">\
+                    <button type="submit">></button>\
+                </form>\
             </section>\
             <audio id="audio" src="audios/carta.weba"></audio>\
         </main>\
