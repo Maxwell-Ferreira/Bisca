@@ -197,6 +197,15 @@ button:hover{
     margin-bottom: 10px;
 }
 
+#vencedor{
+    font-size: 2rem;
+    padding: 4rem;
+    background-color: rgb(126, 25, 25);
+    color: #fff;
+    border-radius: 1rem;
+    animation: vencedor .15s infinite ease;
+}
+
 .toasty{
     position: absolute;
     display: none;
@@ -219,5 +228,15 @@ button:hover{
     100% {
         bottom: -295px;
         right: -341px;
+    }
+}
+
+@keyframes vencedor {
+    50%{
+        padding: 4.1rem;
+    }
+
+    100%{
+        padding: 4rem;
     }
 }

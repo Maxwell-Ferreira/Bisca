@@ -1,4 +1,5 @@
-var socket = io("https://biscabraba.herokuapp.com");
+//var socket = io("https://biscabraba.herokuapp.com");
+var socket = io("http://localhost:3000");
 
 var id = "";
 var idSala = "";
@@ -219,12 +220,20 @@ function exibirVencedor(vencedor){
 
     var texto = 'Partida terminada! Os vencedores são: ';
     for(var i=0; i<vencedor.jogadores.length; i++){
-        texto = texto + " * " + vencedor.jogadores[i] + " * ";
+        texto = texto + " " + vencedor.jogadores[i] + " ";
+        if(vencedor.jogadores.length > 0){
+            if(i < vencedor.jogadores.length -1){
+                texto += " e ";
+            }
+        }
     }
     texto = texto + " com " + vencedor.pontos + " pontos!";
-    setTimeout(() => {
-        alert(texto);
-    }, 300);
+
+    $('.game').css('align-items', 'center');
+    $('.game').css('justify-content', 'center');
+    $('.game').html(`
+        <div id="vencedor">${texto}</div>
+    `);
 }
 
 function gerarTelaPartida(){
