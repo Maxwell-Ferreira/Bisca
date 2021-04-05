@@ -89,7 +89,21 @@ class Helper{
                         jogo.tirarTrunfo();
                         jogo.darCartas();
                         jogo.setTurno(value.jogadores[i].id);
-                        this.emit.iniciarPartida(jogo, key);
+
+                        var turnoJogador = jogo.jogadores.filter(function(value){
+                            return value.id == jogo.turno;
+                        });
+
+                        var time1 = jogo.jogadores.filter(function(value){
+                            return value.time == 1;
+                        });
+                        var time2 = jogo.jogadores.filter(function(value){
+                            return value.time == 2;
+                        });
+
+                        var times = {time1: time1, time2: time2};
+
+                        this.emit.iniciarPartida(jogo, key, times, turnoJogador);
                         break;
                     }else{
                         this.emit.mensagem("Ainda faltam jogadores para a partida poder iniiciar!");
@@ -414,9 +428,9 @@ class Helper{
             this.resposta.result = true;
         },
 
-        iniciarPartida: (jogo, indexSala) => {
+        iniciarPartida: (jogo, indexSala, times, turnoJogador) => {
             this.resposta.emit = "iniciarPartida";
-            this.resposta.resposta = {jogo: jogo, index: indexSala};
+            this.resposta.resposta = {jogo: jogo, index: indexSala, times: times, turnoJogador: turnoJogador};
             this.resposta.result = true;
         },
 

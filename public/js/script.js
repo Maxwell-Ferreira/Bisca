@@ -1,5 +1,4 @@
-//var socket = io("https://biscabraba.herokuapp.com");
-var socket = io("http://localhost:3000");
+var socket = io("https://biscabraba.herokuapp.com");
 
 var id = "";
 var idSala = "";
@@ -29,6 +28,8 @@ socket.on('iniciarPartida', function(dados){
     alert(`O trunfo da partida é: ${dados.jogoEstado.trunfo}`);
     mostrarTrunfo(dados.jogoEstado.trunfo);
     darCartas(dados.jogador);
+    mostrarTimes(dados.times);
+    jogadorTurno(dados.turnoJogador);
 });
 
 socket.on('jogarCarta', function(jogada){
@@ -48,6 +49,10 @@ socket.on('removerCartaMao', function(indice){
 
 socket.on('removerCartaAdversario', function(){
     removerCartaAdversario();
+});
+
+socket.on('jogadorTurno', nome => {
+    jogadorTurno(nome);
 });
 
 socket.on('calcularRodada', function(jogador){
@@ -147,6 +152,26 @@ function darCartas(jogador){
     $("#pronto").html('<button class="calcularRodada" onClick="pronto()">Pronto</button>');
 }
 
+function mostrarTimes(times){
+    $('#listaJogadores').html(``);
+
+    $('#listaJogadores').append(`<p>Time 1:</p>`);
+    for(let i=0; i<times.time1.length; i++){
+        $('#listaJogadores').append(`<p id="${times.time1[i].nome}">${times.time1[i].nome}</p>`);
+    }
+
+    $('#listaJogadores').append(`<br/><p>Time 2:</p>`);
+    for(let i=0; i<times.time2.length; i++){
+        $('#listaJogadores').append(`<p id="${times.time2[i].nome}">${times.time2[i].nome}</p>`);
+    }
+}
+
+function jogadorTurno(jogadorTurno){
+    console.log(jogadorTurno);
+    $('#listaJogadores').children().css("color",' #fff');
+    $(`#${jogadorTurno}`).css("color", "rgb(53, 62, 175)");
+}
+
 function jogarCarta(indice){
     let jogada = indice;
     socket.emit("jogarCarta", jogada);
@@ -216,7 +241,6 @@ function mostrarMensagem(mensagem){
 
 function exibirVencedor(vencedor){
     reproduzirAudio('foguete');
-    console.log(vencedor);
 
     var texto = 'Partida terminada! Os vencedores são: ';
     for(var i=0; i<vencedor.jogadores.length; i++){

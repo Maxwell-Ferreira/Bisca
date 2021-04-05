@@ -52,7 +52,9 @@ io.on('connection', function(socket){
             for(var i=0; i<jogo.jogadores.length; i++){
                 var dados = {
                     jogador: jogo.jogadores[i],
-                    jogoEstado: jogo.getState()
+                    jogoEstado: jogo.getState(),
+                    times: verificacao.resposta.times,
+                    turnoJogador: verificacao.resposta.turnoJogador[0].nome
                 };
                 io.to(jogo.jogadores[i].id).emit(verificacao.emit, dados);
             }
@@ -80,8 +82,12 @@ io.on('connection', function(socket){
                         io.to(jogo.jogadores[j].id).emit(verificacao.emit, jogo.jogadores[i].jogada);
                     }
                 }
-                
             }
+            var turnoJogador = jogo.jogadores.filter(function(value){
+                return value.id == jogo.turno;
+            });
+
+            io.to(jogo.id).emit("jogadorTurno", turnoJogador[0].nome);
         }else{
             socket.emit(verificacao.emit, verificacao.resposta);
         }
@@ -111,6 +117,12 @@ io.on('connection', function(socket){
                 var vencedor = helper.getVencedorPartida(jogos[verificar.resposta.index]);
                 io.to(jogos[verificar.resposta.index].id).emit("vencedor", vencedor);
             }
+            var jogo = verificar.resposta.jogo;
+            var turnoJogador = jogo.jogadores.filter(function(value){
+                return value.id == jogo.turno;
+            });
+
+            io.to(jogo.id).emit("jogadorTurno", turnoJogador[0].nome);
         }else{
             socket.emit(verificar.emit, verificar.resposta);
         }
