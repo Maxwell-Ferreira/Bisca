@@ -26,7 +26,7 @@ class Helper{
 
     verificarDadosCriar(dados){
         if(typeof dados.idSala !== "undefined" && typeof dados.nomeJogador !== "undefined" && typeof dados.numJogadores !== "undefined"){
-            if(this.verificarString(dados.idSala) && this.verificarString(dados.nomeJogador) && this.verificarString(dados.numJogadores)){
+            if(this.verificarString(dados.idSala) && this.verificarString(dados.nomeJogador) && this.verificarNumJogadores(dados.numJogadores)){
                 if(dados.numJogadores == "2" || dados.numJogadores == "4"){
                     return true;
                 }else{
@@ -377,7 +377,7 @@ class Helper{
 
     verificarString(string){
         if(typeof string === "string"){
-            if(string.length <= 20){
+            if(string.length <= 20 && string.length > 3){
                 return true;
             }else{
                 return false;
@@ -386,6 +386,16 @@ class Helper{
             return false;
         }
         
+    }
+
+    verificarNumJogadores(numJogadores){
+        if(typeof numJogadores === "string"){
+            if(numJogadores == "2" || numJogadores == "4"){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     isEmpty(obj) {

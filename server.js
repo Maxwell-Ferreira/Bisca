@@ -130,7 +130,7 @@ io.on('connection', function(socket){
 
     socket.on('mensagem', mensagem => {
         if(typeof mensagem === "string"){
-            if(mensagem.length <= 255){
+            if(mensagem.length <= 255 && mensagem.length > 0){
                 var dados = helper.getJogadorSala(socket.id, jogos);
                 io.to(dados.idSala).emit("mensagem", {jogador: dados.jogador, texto: mensagem});
             }

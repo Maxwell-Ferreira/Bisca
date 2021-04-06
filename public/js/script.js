@@ -18,14 +18,12 @@ socket.on('carregarSala', function(jogadores){
 
 socket.on('novoJogador', (players) => {
     reproduzirAudio("nice");
-    setTimeout(() => {
-        alert(`${players[0].nome} se conectou!! :D`);
-    }, 250);
+    notificacao(`${players[0].nome} se conectou!! :D`);
     addJogadorLista(players);
 });
 
 socket.on('iniciarPartida', function(dados){
-    alert(`O trunfo da partida é: ${dados.jogoEstado.trunfo}`);
+    notificacao(`O trunfo da partida é: ${dados.jogoEstado.trunfo}`);
     mostrarTrunfo(dados.jogoEstado.trunfo);
     darCartas(dados.jogador);
     mostrarTimes(dados.times);
@@ -37,10 +35,7 @@ socket.on('jogarCarta', function(jogada){
 });
 
 socket.on('cartaJogada', (msg) => {
-    reproduzirAudio("cartoon_slip");
-    setTimeout(() => {
-        alert(msg);
-    }, 200);
+    notificacao(msg);
 });
 
 socket.on('removerCartaMao', function(indice){
@@ -62,32 +57,28 @@ socket.on('calcularRodada', function(jogador){
 
 socket.on('msg', function(msg){
     reproduzirAudio("nope");
-    setTimeout(() => {
-        alert(msg);
-    }, 200);
+    notificacao(msg)
 });
 
 socket.on('removerJogador', (nome) =>{
     reproduzirAudio("oh_no");
-    setTimeout(() => {
-        alert(`${nome} se desconectou! :(`);
-    }, 200);
+    notificacao(`${nome} se desconectou! :(`)
     removerJogador(nome);
 });
 
 socket.on('desconexao', function(msg){
     reproduzirAudio("oh_no");
-    setTimeout(() => {
-        alert(msg);
-    }, 200);
+    notificacao(msg);
     setTimeout(() => {
         document.location.reload(true);
-    }, 1500);
+    }, 4000);
 })
 
 socket.on('finalizarPartida', function(msg){
-    alert(msg);
-    document.location.reload(true);
+    notificacao(msg);
+    setTimeout(() => {
+        document.location.reload(true);
+    }, 4000);
 })
 
 socket.on('mensagem', mensagem => {
@@ -104,14 +95,30 @@ function criarSala(event){
     var nomeJogador = document.getElementById("nomeCriador").value;
     var select = document.getElementById("numJogadores");
     var numJogadores = select.options[select.selectedIndex].value;
-    socket.emit('criarSala', {idSala: idSala, nomeJogador: nomeJogador, numJogadores: numJogadores});
+
+    if(verificarString([idSala, nomeJogador, numJogadores])){
+        var criar = verificarDadosCriar({idSala, nomeJogador, numJogadores});
+        if(criar.result){
+            socket.emit('criarSala', {idSala: idSala, nomeJogador: nomeJogador, numJogadores: numJogadores});
+        }else{
+            alerta(criar.erros);
+        }
+    }
 }
 
 function entrarSala(event){
     event.preventDefault();
     idSala = document.getElementById("idEntrarSala").value;
     nomeJogador = document.getElementById("nomeConectar").value;
-    socket.emit('entrarSala', {idSala: idSala, nomeJogador: nomeJogador});
+
+    if(verificarString([idSala, nomeJogador])){
+        var entrar = verificarDadosEntrar({idSala, nomeJogador})
+        if(entrar.result){
+            socket.emit('entrarSala', {idSala: idSala, nomeJogador: nomeJogador});
+        }else{
+            alerta(entrar.erros);
+        }
+    }
 }
 
 function addJogadorLista(jogadores){
@@ -143,7 +150,7 @@ function darCartas(jogador){
 
     $('#mao').html('');
     $('#maoOponente').html('');
-    reproduzirAudio();
+    reproduzirAudio("carta");
 
     for(let i=0; i<jogador.mao.length; i++){
         $("#mao").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${i}" onClick="jogarCarta(${i})">`);
@@ -216,18 +223,14 @@ function resgatarGET(){
     return data;
 }
 
-function reproduzirAudio(src){
-    let audio = document.querySelector('#audio');
-    $('#audio').attr("src", `audios/${src}.weba`);
-    audio.play();
-}
-
 function enviarMensagem(e){
     e.preventDefault();
     var getMensagem = document.getElementById("enviarMsg");
     var mensagem = getMensagem.value;
-    getMensagem.value = "";
-    socket.emit('mensagem', mensagem);
+    if(mensagem.length > 0){
+        getMensagem.value = "";
+        socket.emit('mensagem', mensagem);
+    }
 }
 
 function mostrarMensagem(mensagem){
