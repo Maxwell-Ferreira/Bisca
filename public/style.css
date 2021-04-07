@@ -1,4 +1,4 @@
-html, body{
+html, body, #tela{
     width: 100vw;
     height: 100vh;
     margin: 0;
@@ -15,7 +15,8 @@ body{
 }
 
 .notificacao{
-    position: absolute;
+    position: fixed;
+    z-index: 100;
     display: none;
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -56,16 +57,14 @@ body{
     background-color: rgb(223, 215, 179);
 }
 
-#tela{
-    width: 100%;
-}
-
 .home{
     display: flex;
     flex-direction: column;
     align-items: center;
     background-color: rgba(0, 0, 0, 0.733);
     height: 100vh;
+    width: 100vw;
+    overflow-y: auto;
 }
 
 h1{
@@ -79,8 +78,8 @@ h1{
 
 .sections{
     display: flex;
-    justify-content: space-around;
-    width: 80%;
+    justify-content: space-evenly;
+    width: 100%;
 }
 
 .sections h1{
@@ -89,25 +88,34 @@ h1{
 
 .home-section{
     background-color: #fff;
-    padding: 3rem 6rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 400px;
+    padding: 2rem;
     border-radius: 1rem;
     box-shadow:  5px 5px 10px #000;
-    min-width: 25%;
 }
 
 .sections form{
+    height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
 }
 
+.form-group{
+    width: 100%;
+    margin: 10px 0;
+}
+
 .form-item{
-    margin: 16px 0;
     margin-left: 10px;
 }
 
 input, select{
+    margin: 0;
     border: 1px solid rgb(179, 179, 179);
     border-radius: 4px;
     padding: .4rem;
@@ -128,6 +136,7 @@ button{
     color: white;
     font-family: inherit;
     font-size: inherit;
+    outline: none;
 }
 
 button:hover{
@@ -138,16 +147,38 @@ button:hover{
     width: 100vw;
     height: 100vh;
     display: flex;
+    justify-content: center;
+}
+
+.botao-menu{
+    display: none;
+    position: fixed;
+    z-index: 91;
+    left: 0;
+    width: 4rem !important;
+    margin: 1rem;
+    box-shadow:  5px 5px 5px #000;
+    transition: .2s;
+}
+
+.move-botao-menu{
+    left: 120px;
 }
 
 .menu{
+    position: fixed;
+    z-index: 90;
     padding: 20px 40px;
     background-color: rgba(0, 0, 0, 0.685);
     display: flex;
     flex-direction: column;
     box-shadow: 5px 0 10px #000;
-    width: 15%;
+    height: calc(100vh - 40px);
+    width: 180px;
     color: #fff;
+    transition: .2s;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .menu button{
@@ -191,14 +222,34 @@ button:hover{
     box-shadow:  5px 5px 5px #000;
 }
 
+.botao-chat{
+    position: fixed;
+    z-index: 94;
+    right: 0;
+    width: 4rem !important;
+    margin: 1rem;
+    box-shadow:  5px 5px 5px #000;
+    transition: .2s;
+}
+
 .chat{
+    position: fixed;
+    z-index: 93;
+    right: 0;
     display: flex;
+    padding-top: 1rem 0;
     flex-direction: column;
     background-color: rgb(231, 221, 165);
-    padding: 10px 1.5rem;
-    width: 20%;
+    width: 0;
     height: calc(100% - 20px);
     box-shadow: -5px 0 10px #000;
+    transition: .2s;
+    
+}
+
+.chat-show{
+    padding: 1rem 1.5rem;
+    width: 270px;
 }
 
 .chat h2{
@@ -298,5 +349,61 @@ button:hover{
 
     100%{
         opacity: 0;
+    }
+}
+
+@media (max-width: 980px) {
+    body{
+        font-size: 14px;
+    }
+
+    .sections{
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .home-section{
+        margin-bottom: 1rem;
+        width: 360px;
+    }
+
+    .menu{
+        padding: 1rem;
+        height: calc(100vh - 2rem);
+    }
+
+    .menu h1{
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 750px){
+    .menu{
+        width: 0;
+        padding: 1rem 0;
+    }
+
+    .menu-show{
+        display: flex;
+        width: 180px;
+        padding: 1rem;
+    }
+
+    .botao-menu{
+        display: block;
+    }
+}
+
+
+@media (max-width: 490px) {
+    .home-section{
+        margin-bottom: 1rem;
+        width: 250px;
+    }
+
+    .mao img, #jogada img{
+        height: 120px;
+        width: 70px;
+        margin: 0 10px;
     }
 }

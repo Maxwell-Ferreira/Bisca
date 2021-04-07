@@ -1,4 +1,5 @@
-var socket = io("https://biscabraba.herokuapp.com");
+//var socket = io("https://biscabraba.herokuapp.com");
+var socket = io("http://localhost:3000");
 
 var id = "";
 var idSala = "";
@@ -263,20 +264,55 @@ function exibirVencedor(vencedor){
     `);
 }
 
+function mostrarChat(){
+    if($(".chat").hasClass("chat-show")){
+        $('.chat').removeClass("chat-show");
+        $('.botao-chat').removeClass("move-botao-chat");
+        $('.botao-chat').html('Chat');
+    }else{
+        $('.chat').addClass("chat-show");
+        $('.botao-chat').addClass("move-botao-chat");
+        $('.botao-chat').html('Ocultar');
+    }
+}
+
+function mostrarMenu(){
+    if($(".menu").hasClass("menu-show")){
+        $('.menu').removeClass("menu-show");
+        $('.botao-menu').removeClass("move-botao-menu");
+        $('.botao-menu').html('Menu');
+    }else{
+        $('.menu').addClass("menu-show");
+        $('.botao-menu').addClass("move-botao-menu");
+        $('.botao-menu').html('Ocultar');
+        $('.partida').css("width", "auto");
+    }
+}
+
 function gerarTelaPartida(){
     $('#tela').css("background-color", "rgb(33, 80, 47)");
     $('#tela').html('\
+        <button class="botao-menu" id="botao-menu" onClick="mostrarMenu()">Menu</button>\
+        <div class="menu">\
+            <h1>Bisca Braba</h1>\
+            <div id="informacoes">\
+                <p id="trunfo"></p>\
+                <div id="placar"></div>\
+            </div>\
+            <button id="iniciar" class="iniciarpartida" onClick="iniciarPartida(event)">Iniciar Partida</button>\
+            <div id="pronto"></div>\
+            <div id="listaJogadores"><p style="border-bottom: 1px solid #fff; margin-bottom: 1rem;">Jogadores Conectados</p></div>\
+        </div>\
+        <button id="botao-chat" class="botao-chat" onClick="mostrarChat()">Chat</button>\
+        <div class="chat">\
+            <h2>Chat</h2>\
+            <div id="mensagens" class="mensagens"></div>\
+            <form id="form-mensagem" class="form-mensagem" onSubmit="enviarMensagem(event)">\
+                <input type="text" id="enviarMsg" autocomplete="off" placeholder="Enviar mensagem..." maxlength="255">\
+                <button type="submit">></button>\
+            </form>\
+        </div>\
         <main class="partida">\
-            <section class="menu">\
-                <h1>Bisca Braba</h1>\
-                <div id="informacoes">\
-                    <p id="trunfo"></p>\
-                    <div id="placar"></div>\
-                </div>\
-                <button id="iniciar" class="iniciarpartida" onClick="iniciarPartida(event)">Iniciar Partida</button>\
-                <div id="pronto"></div>\
-                <div id="listaJogadores"><p style="border-bottom: 1px solid #fff; margin-bottom: 1rem;">Jogadores Conectados</p></div>\
-            </section>\
             <section class="game">\
                 <div class="oponente">\
                     <div class="mao" id="maoOponente">\
@@ -289,14 +325,6 @@ function gerarTelaPartida(){
                     <div class="mao" id="mao">\
                     </div>\
                 </div>\
-            </section>\
-            <section class="chat">\
-                <h2>Chat</h2>\
-                <div id="mensagens" class="mensagens"></div>\
-                <form id="form-mensagem" class="form-mensagem" onSubmit="enviarMensagem(event)">\
-                    <input type="text" id="enviarMsg" autocomplete="off" placeholder="Enviar mensagem..." maxlength="255">\
-                    <button type="submit">></button>\
-                </form>\
             </section>\
             <audio id="audio" src="audios/carta.weba"></audio>\
         </main>\

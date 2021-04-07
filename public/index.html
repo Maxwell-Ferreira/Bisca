@@ -19,36 +19,40 @@
                 <section class="home-section">
                     <form id="form-criar" name="form-criar">
                         <h2>Criar Sala</h2>
-                        <div>
+                        <div class="form-group">
                             <label for="idSala">ID da Sala:</label>
                             <input type="text" name="idSala" id="idCriarSala" class="form-item" maxlength="20">
                         </div>
-                        <div>
+                        <div class="form-group">
                             <label for="nomeCriador">Seu nome:</label>
                             <input type="text" name="nomeCriador" id="nomeCriador" class="form-item" maxlength="20">
                         </div>
-                        <div>
+                        <div class="form-group">
                             <label for="numJogadores">Tipo de jogo:</label>
                             <select name="numJogadores" id="numJogadores" class="form-item">
                                 <option value="2">2 Jogadores</option>
                                 <option value="4">4 Jogadores</option>
                             </select>
                         </div>
-                        <button type="submit" class="btnCriar" class="form-item" onClick="criarSala(event)">Criar</button>
+                        <div class="form-group">
+                            <button type="submit" class="btnCriar" class="form-item" onClick="criarSala(event)">Criar</button>
+                        </div>
                     </form>
                 </section>
                 <section class="home-section">
                     <form method="GET">
                         <h2>Conectar à uma Sala</h2>
-                        <div>
+                        <div class="form-group">
                             <label for="idSala">ID da Sala:</label>
                             <input type="text" name="idSala" id="idEntrarSala" class="form-item" maxlength="20">
                         </div>
-                        <div>
+                        <div class="form-group">
                             <label for="nomeConectar">Seu nome:</label>
                             <input type="text" name="nomeConectar" id="nomeConectar" class="form-item" maxlength="20">
                         </div>
-                        <button type="submit" class="btnConectar" class="form-item" onClick="entrarSala(event)">Conectar</button>
+                        <div class="form-group">
+                            <button type="submit" class="btnConectar" class="form-item" onClick="entrarSala(event)">Conectar</button>
+                        </div>
                     </form>
                 </section>
             </div>
