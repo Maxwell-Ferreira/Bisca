@@ -1,11 +1,11 @@
-//var socket = io("https://biscabraba.herokuapp.com");
-var socket = io("http://localhost:3000");
+var socket = io("https://biscabraba.herokuapp.com");
 
 var id = "";
 var idSala = "";
 var nomeJogador = "";
 var formChat;
 var iniciou = "";
+var nomeJogador;
 
 socket.on('connect', () =>{
     id = socket.id;
@@ -95,9 +95,11 @@ socket.on('vencedor', vencedor => {
 function criarSala(event){
     event.preventDefault();
     var idSala = document.getElementById("idCriarSala").value;
-    var nomeJogador = document.getElementById("nomeCriador").value;
+    nomeJogador = document.getElementById("nomeCriador").value;
     var select = document.getElementById("numJogadores");
     var numJogadores = select.options[select.selectedIndex].value;
+
+
 
     if(verificarString([idSala, nomeJogador, numJogadores])){
         var criar = verificarDadosCriar({idSala, nomeJogador, numJogadores});
@@ -229,9 +231,13 @@ function enviarMensagem(e){
 }
 
 function mostrarMensagem(mensagem){
+    var minhaMsg = "";
+    if(mensagem.jogador == nomeJogador){
+        minhaMsg = "minhaMsg";
+    }
     $('#mensagens').append(`
-        <div class="mensagem">
-            <strong>${mensagem.jogador}</strong>: ${mensagem.texto}
+        <div class="mensagem ${minhaMsg}">
+            <strong>${mensagem.jogador}</strong></br> ${mensagem.texto}
         </div>`);
     var divMensagens = document.getElementById("mensagens");
     divMensagens.scrollTop = divMensagens.scrollHeight;

@@ -405,16 +405,6 @@ class Helper{
         this.resposta.result = true;
     }
 
-    getJogadorSala(idJogador, jogos){
-        for(var i=0; i<jogos.length; i++){
-            for(var j=0; j<jogos[i].jogadores.length; j++){
-                if(jogos[i].jogadores[j].id == idJogador){
-                    return {idSala: jogos[i].id, jogador: jogos[i].jogadores[j].nome};
-                }
-            }
-        }
-    }
-
     emit = {
         mensagem: (msg) => {
             this.resposta.emit = "msg";
