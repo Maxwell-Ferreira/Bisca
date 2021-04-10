@@ -160,7 +160,6 @@ function darCartas(jogador){
         $("#mao").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${i}" onClick="jogarCarta(${i})">`);
         $("#maoOponente").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/verso.png" class="carta" id="op${i}"></img>`);
     }
-    $("#pronto").html('<button class="calcularRodada" onClick="pronto()">Pronto</button>');
 }
 
 function mostrarTimes(times){
@@ -204,10 +203,6 @@ function renderJogarCarta(jogada){
     if(num === 10){
         toasty();
     }
-}
-
-function pronto(){
-    socket.emit('pronto');
 }
 
 function limparMesa(){
@@ -303,7 +298,6 @@ function gerarTelaPartida(){
                 <div id="placar"></div>\
             </div>\
             <button id="iniciar" class="iniciarpartida" onClick="iniciarPartida(event)">Iniciar Partida</button>\
-            <div id="pronto"></div>\
             <div id="listaJogadores"><p style="border-bottom: 1px solid #fff; margin-bottom: 1rem;">Jogadores Conectados</p></div>\
         </div>\
         <button id="botao-chat" class="botao-chat" onClick="mostrarChat()">Chat</button>\
