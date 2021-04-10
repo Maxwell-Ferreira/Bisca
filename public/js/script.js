@@ -18,7 +18,9 @@ socket.on('carregarSala', function(jogadores){
 
 socket.on('novoJogador', (players) => {
     reproduzirAudio("nice");
-    notificacao(`${players[0].nome} se conectou!! :D`);
+    for(var id in players){
+        notificacao(`${players[id].nome} se conectou!! :D`);
+    }
     addJogadorLista(players);
 });
 
@@ -51,8 +53,10 @@ socket.on('jogadorTurno', nome => {
 });
 
 socket.on('calcularRodada', function(jogador){
-    darCartas(jogador);
-    limparMesa();
+    setTimeout(() => {
+        darCartas(jogador);
+        limparMesa();
+    }, 000);
 });
 
 socket.on('msg', function(msg){
@@ -122,8 +126,8 @@ function entrarSala(event){
 }
 
 function addJogadorLista(jogadores){
-    for(var i=0; i<jogadores.length; i++){
-        $('#listaJogadores').append(`<p id="${jogadores[i].nome}">${jogadores[i].nome}</p>`);
+    for(id in jogadores){
+        $('#listaJogadores').append(`<p id="${jogadores[id].nome}">${jogadores[id].nome}</p>`);
     }
 }
 

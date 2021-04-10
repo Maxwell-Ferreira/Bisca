@@ -50,7 +50,7 @@ class Jogo{
         this.turno = '';
         this.numJogadas = 0;
         this.statusAs = false;
-        this.jogadores = [];
+        this.jogadores = {};
         this.chat = {
             mensagens:[]
         };
@@ -90,7 +90,7 @@ class Jogo{
 
     setJogador(dados){
         var jogador = new Jogador(dados.id, dados.nome);
-        this.jogadores.push(jogador);
+        this.jogadores[dados.id] = jogador;
     }
 
     setStatus(){
@@ -107,23 +107,12 @@ class Jogo{
 
     definirTimes(){
         var time = 1;
-        for(var i=0; i<this.numJogadores; i++){
-            this.jogadores[i].time = time;
+        for(var jogador in this.jogadores){
+            this.jogadores[jogador].time = time;
             if(time == 1){
                 time = 2;
             }else{
                 time = 1;
-            }
-        }
-    }
-
-    darCartas(){
-        var num = 0;
-        for(var i=0; i<this.numJogadores; i++){
-            for(var j=0; j<3; j++){
-                num = Math.floor(Math.random() * (this.baralho.length));
-                this.jogadores[i].mao.push(this.baralho[num]);
-                this.baralho.splice(num, 1);
             }
         }
     }
@@ -135,9 +124,20 @@ class Jogo{
         this.trunfo = naipes[num];
     }
 
+    darCartas(){
+        var num = 0;
+        for(var jogador in this.jogadores){
+            for(var j=0; j<3; j++){
+                num = Math.floor(Math.random() * (this.baralho.length));
+                this.jogadores[jogador].mao.push(this.baralho[num]);
+                this.baralho.splice(num, 1);
+            }
+        }
+    }
+
     verificarStatusJogadores(){
-        for(var i=0; i<this.jogadores.length; i++){
-            if(!this.jogadores[i].status){
+        for(var j in this.jogadores){
+            if(!this.jogadores[j].status){
                 return false;
             }
         }
@@ -145,46 +145,38 @@ class Jogo{
     }
 
     redefineStatusJogadores(){
-        for(var i=0; i<this.jogadores.length; i++){
-            this.jogadores[i].status = false;
+        for(var j in this.jogadores){
+            this.jogadores[j].status = false;
         }
     }
 
     comprarCartas(){
         var num;
-        for(var i=0; i<this.numJogadores; i++){
-            var num = Math.floor(Math.random() * (this.baralho.length));
-            this.jogadores[i].mao.push(this.baralho[num]);
-            this.jogadores[i].jogada = [];
+        for(var j in this.jogadores){
+            num = Math.floor(Math.random() * (this.baralho.length));
+            this.jogadores[j].mao.push(this.baralho[num]);
+            this.jogadores[j].jogada = [];
             this.baralho.splice(num, 1);
         }
     }
 
-    verificarAs(jogadorId, indice){
-        for(var i=0; i<this.jogadores.length; i++){
-            if(jogadorId == this.jogadores[i].id){
-                if(this.jogadores[i].mao[indice][1] == this.trunfo & this.jogadores[i].mao[indice][0] == "as"){
-                    if(this.statusAs){
-                        return true;
-                    }else{
-                        return false;
-                    }
-                }else{
-                    return true;
-                }
+    verificarAs(id, indice){
+        if(this.jogadores[id].mao[indice][1] === this.trunfo && this.jogadores[id].mao[indice][0] == "as"){
+            if(this.statusAs){
+                return true;
+            }else{
+                return false;
             }
+        }else{
+            return true;
         }
+
     }
 
-    isSete(jogadorId, indice){
-        for(var i=0; i<this.jogadores.length; i++){
-            if(jogadorId == this.jogadores[i].id){
-                if(this.jogadores[i].mao[indice][1] == this.trunfo & this.jogadores[i].mao[indice][0] == "7"){
-                    this.statusAs = true;
-                }
-                break;
-            }
-        } 
+    verificarSete(id, indice){
+        if(this.jogadores[id].mao[indice][1] == this.trunfo && this.jogadores[id].mao[indice][0] == "7"){
+            this.statusAs = true;
+        }
     }
 }
 

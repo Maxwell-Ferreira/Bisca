@@ -12,7 +12,7 @@ app.set('views', path.join(__dirname, 'public'));
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 
-var jogos = [];
+var jogos = {};
 
 io.on('connection', function(socket){
     console.log(`Socket conectado -> id:${socket.id}`);
@@ -22,7 +22,8 @@ io.on('connection', function(socket){
         var verificacao = helper.verificarCriar(dados, jogos, socket.id);
         if(verificacao.result){
             socket.join(dados.idSala);
-            jogos.push(verificacao.resposta);
+            socket.sala = dados.idSala;
+            jogos[socket.sala] = verificacao.resposta;
             socket.emit(verificacao.emit, verificacao.resposta.jogadores);
         }else{
             socket.emit(verificacao.emit, verificacao.resposta);
@@ -33,11 +34,12 @@ io.on('connection', function(socket){
         var verificacao = helper.verificarEntrar(dados, jogos, socket.id);
         if(verificacao.result){
             socket.join(dados.idSala);
-            jogos[verificacao.resposta.index] = verificacao.resposta.jogo;
-            socket.emit(verificacao.emit, verificacao.resposta.jogo.jogadores);
-            var players = [];
-            players[0] = verificacao.resposta.jogo.jogadores.find(jogador => jogador.id == socket.id);
-            socket.broadcast.to(dados.idSala).emit("novoJogador", players);
+            socket.sala = dados.idSala;
+            jogos[socket.sala] = verificacao.resposta;
+            socket.emit(verificacao.emit, jogos[socket.sala].jogadores);
+            
+            var player = jogos[socket.sala].jogadores[socket.id];
+            socket.broadcast.to(dados.idSala).emit("novoJogador", {player});
         }else{
             socket.emit(verificacao.emit, verificacao.resposta);
         }
@@ -45,18 +47,18 @@ io.on('connection', function(socket){
     });
 
     socket.on('iniciarPartida', () => {
-        var verificacao = helper.verificarIniciar(jogos, socket.id);
+        var verificacao = helper.verificarIniciar(jogos[socket.sala], socket.id);
         if(verificacao.result){
-            var jogo = verificacao.resposta.jogo;
-            jogos[verificacao.resposta.index] = jogo;
-            for(var i=0; i<jogo.jogadores.length; i++){
+            jogos[socket.sala] = verificacao.resposta.jogo;
+
+            for(var j in jogos[socket.sala].jogadores){
                 var dados = {
-                    jogador: jogo.jogadores[i],
-                    jogoEstado: jogo.getState(),
+                    jogador: jogos[socket.sala].jogadores[j],
+                    jogoEstado: jogos[socket.sala].getState(),
                     times: verificacao.resposta.times,
-                    turnoJogador: verificacao.resposta.turnoJogador[0].nome
+                    turnoJogador: verificacao.resposta.turnoJogador.nome
                 };
-                io.to(jogo.jogadores[i].id).emit(verificacao.emit, dados);
+                io.to(jogos[socket.sala].jogadores[j].id).emit(verificacao.emit, dados);
             }
         }else{
             socket.emit(verificacao.emit, verificacao.resposta);
@@ -64,67 +66,45 @@ io.on('connection', function(socket){
     });
 
     socket.on('jogarCarta', (jogada) =>{
-        verificacao = helper.verificarJogar(jogada, jogos, socket.id);
+        verificacao = helper.verificarJogar(jogada, jogos[socket.sala], socket.id);
         if(verificacao.result){
-            var jogo = verificacao.resposta.jogo;
-            jogos[verificacao.resposta.index] = jogo;
+            var jogo = verificacao.resposta;
+            jogos[socket.sala] = jogo;
+
             socket.emit('removerCartaMao', jogada);
-            for(var i=0; i<jogo.jogadores.length; i++){
-                if(jogo.jogadores[i].id == socket.id){
-                    var dados = {
-                        jogador: jogo.jogadores[i],
-                        jogoEstado: jogo.getState()
-                    };
-                    if(jogo.jogadores[i].id != socket.id){
-                        io.to(jogo.jogadores[i].id).emit("removerCartaAdversario");
-                    }
-                    for(var j=0; j<jogo.jogadores.length; j++){
-                        io.to(jogo.jogadores[j].id).emit(verificacao.emit, jogo.jogadores[i].jogada);
+
+            socket.broadcast.to(jogo.id).emit("removerCartaAdversario");
+            io.to(jogo.id).emit(verificacao.emit, jogo.jogadores[socket.id].jogada);
+            io.to(jogo.id).emit("jogadorTurno", jogo.jogadores[jogo.turno].nome);
+
+            var pronto = helper.pronto(jogos[socket.sala]);
+            if(pronto.result){
+                jogos[socket.sala] = pronto.resposta;
+                if(jogos[socket.sala].baralho.length > 0){
+                    jogos[socket.sala].comprarCartas();
+                }
+
+                var acabaramCartas = true;
+                for(var j in jogos[socket.sala].jogadores){
+                    if(jogos[socket.sala].jogadores[j].mao.length > 0){
+                        acabaramCartas = false;
+                        break;
                     }
                 }
-            }
-            var turnoJogador = jogo.jogadores.filter(function(value){
-                return value.id == jogo.turno;
-            });
 
-            io.to(jogo.id).emit("jogadorTurno", turnoJogador[0].nome);
+                for(var j in jogos[socket.sala].jogadores){
+                    io.to(jogos[socket.sala].jogadores[j].id).emit(pronto.emit, jogos[socket.sala].jogadores[j]);
+                }
+    
+                if(acabaramCartas){
+                    var vencedor = helper.getVencedorPartida(jogos[socket.sala]);
+                    io.to(socket.sala).emit("vencedor", vencedor);
+                }
+    
+                io.to(jogo.id).emit("jogadorTurno", jogos[socket.sala].jogadores[jogos[socket.sala].turno].nome);
+            }
         }else{
             socket.emit(verificacao.emit, verificacao.resposta);
-        }
-    });
-
-    socket.on('pronto', () => {
-        var verificar = helper.pronto(jogos, socket.id);
-        if(verificar.result){
-            jogos[verificar.resposta.index] = verificar.resposta.jogo;
-            if(jogos[verificar.resposta.index].baralho.length > 0){
-                jogos[verificar.resposta.index].comprarCartas();
-            }
-
-            var acabaramCartas = true;
-            for(var i=0; i<jogos[verificar.resposta.index].jogadores.length; i++){
-                if(jogos[verificar.resposta.index].jogadores[i].mao.length > 0){
-                    acabaramCartas = false;
-                    break;
-                }
-            }
-
-            for(var i=0; i<jogos[verificar.resposta.index].jogadores.length; i++){
-                io.to(jogos[verificar.resposta.index].jogadores[i].id).emit(verificar.emit, jogos[verificar.resposta.index].jogadores[i]);
-            }
-
-            if(acabaramCartas){
-                var vencedor = helper.getVencedorPartida(jogos[verificar.resposta.index]);
-                io.to(jogos[verificar.resposta.index].id).emit("vencedor", vencedor);
-            }
-            var jogo = verificar.resposta.jogo;
-            var turnoJogador = jogo.jogadores.filter(function(value){
-                return value.id == jogo.turno;
-            });
-
-            io.to(jogo.id).emit("jogadorTurno", turnoJogador[0].nome);
-        }else{
-            socket.emit(verificar.emit, verificar.resposta);
         }
     });
 
@@ -138,20 +118,18 @@ io.on('connection', function(socket){
     });
 
     socket.on('disconnect', () =>{
-        var dados = helper.desconectar(socket.id, jogos);
-        if(dados){
-            jogos[dados.index] = dados.jogo;
-            if(jogos[dados.index].status || jogos[dados.index].jogadores.length == 0){
-                for(let i=0; i<jogos[dados.index].jogadores.length; i++){
-                    io.to(jogos[dados.index].jogadores[i].id).emit("desconexao", `${dados.jogador.nome} se desconectou! A partida foi encerrada :(`);    
-                }
-                jogos.splice(dados.index, 1);
-            }else{
-                for(let i=0; i<jogos[dados.index].jogadores.length; i++){
-                    io.to(jogos[dados.index].jogadores[i].id).emit("removerJogador", `${dados.jogador.nome}`);    
+        if(typeof socket.sala !== "undefined"){
+            if(typeof jogos[socket.sala] !== "undefined"){
+                if(jogos[socket.sala].status || Object.keys(jogos[socket.sala].jogadores).length == 1){
+                    io.to(socket.sala).emit("desconexao", `${jogos[socket.sala].jogadores[socket.id].nome} se desconectou! A partida foi encerrada :(`);
+                    delete jogos[socket.sala];
+                }else{
+                    io.to(jogos[socket.sala].id).emit("removerJogador", jogos[socket.sala].jogadores[socket.id].nome);
+                    delete jogos[socket.sala].jogadores[socket.id];
                 }
             }
         }
+
         console.log(`Socket desconectado -> id: ${socket.id}`);
     })
 });

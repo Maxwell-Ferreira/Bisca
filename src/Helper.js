@@ -7,8 +7,7 @@ class Helper{
         this.verificarDadosRecebidos(dados);
         if(this.resposta.result){
             if(this.verificarDadosCriar(dados)){
-                var salaExiste = this.salaExiste(dados.idSala, jogos);
-                if(!salaExiste.result){
+                if(!this.salaExiste(dados.idSala, jogos)){
                     var jogo = new Jogo(dados.idSala, dados.numJogadores);
                     jogo.setJogador({id: socketId, nome: dados.nomeJogador});
                     this.emit.carregarSala(jogo);
@@ -44,12 +43,11 @@ class Helper{
         this.verificarDadosRecebidos(dados);
         if(this.resposta.result){
             if(this.verificarDadosEntrar(dados)){
-                var salaExiste = this.salaExiste(dados.idSala, jogos);
-                if(salaExiste.result){
-                    if(!this.salaCheia(jogos[salaExiste.index])){
-                        var jogo = jogos[salaExiste.index];
+                if(this.salaExiste(dados.idSala, jogos)){
+                    var jogo = jogos[dados.idSala];
+                    if(!this.salaCheia(jogo)){
                         jogo.setJogador({id: socketId, nome: dados.nomeJogador});
-                        this.emit.carregarSala(jogo, salaExiste.index);
+                        this.emit.carregarSala(jogo);
                     }else{
                         this.emit.mensagem("A sala informada já está cheia!");
                     }
@@ -78,154 +76,151 @@ class Helper{
         }
     }
 
-    verificarIniciar(jogos, socketId){
-        for(var [key, value] of Object.entries(jogos)){
-            for(var i=0; i<value.jogadores.length; i++){
-                if(value.jogadores[i].id == socketId){
-                    if(value.jogadores.length.toString() == value.numJogadores){
-                        var jogo = value;
-                        jogo.setStatus();
-                        jogo.definirTimes();
-                        jogo.tirarTrunfo();
-                        jogo.darCartas();
-                        jogo.setTurno(value.jogadores[i].id);
+    verificarIniciar(jogo, socketId){
+        var jogador = jogo.jogadores[socketId];
+        if(typeof jogador !== "undefined"){
+            if(Object.keys(jogo.jogadores).length.toString() === jogo.numJogadores){
+                jogo.setStatus();
+                jogo.definirTimes();
+                jogo.tirarTrunfo();
+                jogo.darCartas();
+                jogo.setTurno(jogador.id);
 
-                        var turnoJogador = jogo.jogadores.filter(function(value){
-                            return value.id == jogo.turno;
-                        });
+                var turnoJogador = jogador;
+                var time1 = [];
+                var time2 = [];
 
-                        var time1 = jogo.jogadores.filter(function(value){
-                            return value.time == 1;
-                        });
-                        var time2 = jogo.jogadores.filter(function(value){
-                            return value.time == 2;
-                        });
-
-                        var times = {time1: time1, time2: time2};
-
-                        this.emit.iniciarPartida(jogo, key, times, turnoJogador);
-                        break;
+                for(let j in jogo.jogadores){
+                    if(jogo.jogadores[j].time == 1){
+                        time1.push(jogo.jogadores[j]);
                     }else{
-                        this.emit.mensagem("Ainda faltam jogadores para a partida poder iniiciar!");
-                        break;
+                        time2.push(jogo.jogadores[j]);
                     }
                 }
+
+                var times = {time1, time2};
+
+                this.emit.iniciarPartida(jogo, times, turnoJogador);
+            }else{
+                this.emit.mensagem("Ainda faltam jogadores para a partida poder iniiciar!");
             }
         }
         return this.resposta;
     }
 
-    verificarJogar(jogada, jogos, socketId){
-        if(typeof jogada === "number" && jogada <3){
-            for(var [key, jogo] of Object.entries(jogos)){
-                for(var i=0; i<jogo.jogadores.length; i++){
-                    if(jogo.jogadores[i].id == socketId){
-                        if(socketId == jogo.turno){
-                            jogo.isSete(socketId, jogada);
-                            if(jogo.verificarAs(socketId, jogada)){
-                                jogo.jogadores[i].jogada = jogo.jogadores[i].mao[jogada];
-                                jogo.jogadores[i].mao.splice(jogada, 1);
-                                jogo.numJogadas++;
+    verificarJogar(jogada, jogo, socketId){
+        if(typeof jogo !== "undefined"){
+            if(typeof jogada === "number" && jogada <3){
+                if(socketId === jogo.turno){
+                    jogo.verificarSete(socketId, jogada);
+                    if(jogo.verificarAs(socketId, jogada)){
+                        jogo.jogadores[socketId].jogada = jogo.jogadores[socketId].mao[jogada];
+                        jogo.jogadores[socketId].mao.splice(jogada, 1);
+                        jogo.numJogadas++;
+                        jogo.jogadores[socketId].status = true;
 
-                                if(typeof jogo.jogadores[i+1] !== "undefined"){
-                                    jogo.turno = jogo.jogadores[i+1].id;
+                        var arrayJ = Object.keys(jogo.jogadores);
+
+                        for(var i=0; i<arrayJ.length; i++){
+                            if(jogo.jogadores[socketId].id == arrayJ[i]){
+                                if(typeof arrayJ[i+1] !== "undefined"){
+                                    jogo.turno = `${arrayJ[i+1]}`;
                                 }else{
-                                    jogo.turno = jogo.jogadores[0].id;
+                                    jogo.turno = `${arrayJ[0]}`;
                                 }
-
-                                this.emit.jogarCarta(jogo, key);
-                            }else{
-                                this.emit.mensagem("O ás de trunfo não pode sair antes da 7!");    
+                                break;
                             }
-                        }else{
-                            this.emit.mensagem("Ainda não é sua vez de jogar!");
                         }
-                    }
-                }
-            }
-        }else{
-            this.emit.mensagem("Não tente nos enganar, envie dados corretos! >:(");
-        }
 
-        return this.resposta;
-    }
-
-    pronto(jogos, socketId){
-        for(var i=0; i<jogos.length; i++){
-            for(var j=0; j<jogos[i].jogadores.length; j++){
-                if(jogos[i].jogadores[j].id == socketId){
-                    if(jogos[i].jogadores[j].jogada.length > 0){
-                        jogos[i].jogadores[j].status = true;
-                        if(jogos[i].verificarStatusJogadores()){
-                            var jogo = this.calcularRodada(jogos[i].jogadores, jogos[i]);
-                            jogo.redefineStatusJogadores();
-                            this.emit.calcularRodada(jogo, i);
-                        }else{
-                            this.emit.cartaJogada("Pronto, estamos aguardando os outros jogadores confirmarem também!");
-                        }
+                        this.emit.jogarCarta(jogo);
                     }else{
-                        this.emit.mensagem("Você ainda não jogou uma carta!");
+                        this.emit.mensagem("O ás de trunfo não pode sair antes da 7!");    
                     }
-                }
-            }
-        }
-        return this.resposta;
-    }
-
-    calcularRodada(jogadores, jogo){
-        if(jogadores.length == 2){
-            if(jogadores[0].jogada[1] == jogadores[1].jogada[1]){
-                if(jogadores[0].jogada[3] > jogadores[1].jogada[3]){
-                    jogo.jogadores[0].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]);
-                    jogo.turno = jogadores[0].id;
                 }else{
-                    jogo.jogadores[1].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]);
-                    jogo.turno = jogadores[1].id;
+                    this.emit.mensagem("Ainda não é sua vez de jogar!");
                 }
             }else{
-                if(jogadores[0].jogada[1] == jogo.trunfo){
-                    jogo.jogadores[0].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]);
-                    jogo.turno = jogadores[0].id;
-                }else if(jogadores[1].jogada[1] == jogo.trunfo){
-                    jogo.jogadores[1].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]);
-                    jogo.turno = jogadores[1].id;
+                this.emit.mensagem("Não tente nos enganar, envie dados corretos! >:(");
+            }
+        }else{
+            this.emit.mensagem("Não tente nos enganar! Sabemos que ainda não se conecou à uma sala!");
+        }
+    
+        return this.resposta;
+    }
+
+    pronto(jogo){
+        if(jogo.verificarStatusJogadores()){
+            var resultado = this.calcularRodada(jogo);
+            resultado.redefineStatusJogadores();
+            this.emit.calcularRodada(resultado);
+        }else{
+            this.emit.cartaJogada("Pronto, estamos aguardando os outros jogadores jogarem também!");
+        }
+
+        return this.resposta;
+    }
+
+    calcularRodada(jogo){
+        var jogadores = jogo.jogadores;
+        var j = Object.keys(jogadores);
+
+        if(j.length == 2){
+            if(jogadores[j[0]].jogada[1] == jogadores[j[1]].jogada[1]){
+                if(jogadores[j[0]].jogada[3] > jogadores[j[1]].jogada[3]){
+                    jogo.jogadores[j[0]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]);
+                    jogo.turno = jogadores[j[0]].id;
                 }else{
-                    if(jogadores[0].id == jogo.turno){
-                        jogo.jogadores[0].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]);
-                        jogo.turno = jogadores[0].id;
+                    jogo.jogadores[j[1]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]);
+                    jogo.turno = jogadores[j[1]].id;
+                }
+            }else{
+                if(jogadores[j[0]].jogada[1] == jogo.trunfo){
+                    jogo.jogadores[j[0]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]);
+                    jogo.turno = jogadores[j[0]].id;
+                }else if(jogadores[j[1]].jogada[1] == jogo.trunfo){
+                    jogo.jogadores[j[1]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]);
+                    jogo.turno = jogadores[j[1]].id;
+                }else{
+                    if(jogadores[j[0]].id == jogo.turno){
+                        jogo.jogadores[j[0]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]);
+                        jogo.turno = jogadores[j[0]].id;
                     }else{
-                        jogo.jogadores[1].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]);
-                        jogo.turno = jogadores[1].id;
+                        jogo.jogadores[j[1]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]);
+                        jogo.turno = jogadores[j[1]].id;
                     }
                 }
             }
             return jogo;
 
-        }else if(jogadores.length == 4){
-            if(jogadores[0].jogada[1] == jogadores[1].jogada[1] == jogadores[2].jogada[1] == jogadores[3].jogada[1]){
-                if(jogadores[0].jogada[3] > jogadores[1].jogada[3] && jogadores[0].jogada[3] > jogadores[2].jogada[3] && jogadores[0].jogada[3] > jogadores[3].jogada[3]){
-                    jogo.jogadores[0].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]) + parseInt(jogadores[2].jogada[2]) + parseInt(jogadores[3].jogada[2]);
-                    jogo.turno = jogadores[0].id;
-                }else if(jogadores[1].jogada[3] > jogadores[0].jogada[3] && jogadores[1].jogada[3] > jogadores[2].jogada[3] && jogadores[1].jogada[3] > jogadores[3].jogada[3]){
-                    jogo.jogadores[1].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]) + parseInt(jogadores[2].jogada[2]) + parseInt(jogadores[3].jogada[2]);
-                    jogo.turno = jogadores[1].id;
+        }else if(j.length == 4){
+            if(jogadores[j[0]].jogada[1] == jogadores[j[1]].jogada[1] == jogadores[j[2]].jogada[1] == jogadores[j[3]].jogada[1]){
+                if(jogadores[j[0]].jogada[3] > jogadores[j[1]].jogada[3] && jogadores[j[0]].jogada[3] > jogadores[j[2]].jogada[3] && jogadores[j[0]].jogada[3] > jogadores[j[3]].jogada[3]){
+                    jogo.jogadores[j[0]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]) + parseInt(jogadores[j[2]].jogada[2]) + parseInt(jogadores[j[3]].jogada[2]);
+                    jogo.turno = jogadores[j[0]].id;
                 }
-                else if(jogadores[2].jogada[3] > jogadores[0].jogada[3] && jogadores[2].jogada[3] > jogadores[1].jogada[3] && jogadores[2].jogada[3] > jogadores[3].jogada[3]){
-                    jogo.jogadores[2].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]) + parseInt(jogadores[2].jogada[2]) + parseInt(jogadores[3].jogada[2]);
-                    jogo.turno = jogadores[2].id;
+                else if(jogadores[j[1]].jogada[3] > jogadores[j[0]].jogada[3] && jogadores[j[1]].jogada[3] > jogadores[j[2]].jogada[3] && jogadores[j[1]].jogada[3] > jogadores[j[3]].jogada[3]){
+                    jogo.jogadores[j[1]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]) + parseInt(jogadores[j[2]].jogada[2]) + parseInt(jogadores[j[3]].jogada[2]);
+                    jogo.turno = jogadores[j[1]].id;
                 }
-                else if(jogadores[3].jogada[3] > jogadores[0].jogada[3] && jogadores[3].jogada[3] > jogadores[1].jogada[3] && jogadores[3].jogada[3] > jogadores[2].jogada[3]){
-                    jogo.jogadores[3].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]) + parseInt(jogadores[2].jogada[2]) + parseInt(jogadores[3].jogada[2]);
-                    jogo.turno = jogadores[3].id;
+                else if(jogadores[j[2]].jogada[3] > jogadores[j[0]].jogada[3] && jogadores[j[2]].jogada[3] > jogadores[j[1]].jogada[3] && jogadores[j[2]].jogada[3] > jogadores[j[3]].jogada[3]){
+                    jogo.jogadores[j[2]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]) + parseInt(jogadores[j[2]].jogada[2]) + parseInt(jogadores[j[3]].jogada[2]);
+                    jogo.turno = jogadores[j[2]].id;
                 }
-            }else if(jogadores[0].jogada[1] == jogo.trunfo || jogadores[1].jogada[1] == jogo.trunfo || jogadores[2].jogada[1] == jogo.trunfo || jogadores[3].jogada[1] == jogo.trunfo){
+                else if(jogadores[j[3]].jogada[3] > jogadores[j[0]].jogada[3] && jogadores[j[3]].jogada[3] > jogadores[j[1]].jogada[3] && jogadores[j[3]].jogada[3] > jogadores[j[2]].jogada[3]){
+                    jogo.jogadores[j[3]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]) + parseInt(jogadores[j[2]].jogada[2]) + parseInt(jogadores[j[3]].jogada[2]);
+                    jogo.turno = jogadores[j[3]].id;
+                }
+            }
+            else if(jogadores[j[0]].jogada[1] == jogo.trunfo || jogadores[j[1]].jogada[1] == jogo.trunfo || jogadores[j[2]].jogada[1] == jogo.trunfo || jogadores[j[3]].jogada[1] == jogo.trunfo){
                 var vencedor;
-                if(jogadores[0].jogada[1] == jogo.trunfo){
+
+                if(jogadores[j[0]].jogada[1] == jogo.trunfo){
                     vencedor = 0;
-                    for(var i=0; i<jogadores.length; i++){
-                        if(jogadores[0].id != jogadores[i].id){
-                            if(jogadores[i].jogada[1] == jogo.trunfo){
-                                if(jogadores[vencedor].jogada[3] < jogadores[i].jogada[3]){
+                    for(var i=0; i<j.length; i++){
+                        if(jogadores[j[0]].id != jogadores[j[i]].id){
+                            if(jogadores[j[i]].jogada[1] == jogo.trunfo){
+                                if(jogadores[j[vencedor]].jogada[3] < jogadores[j[i]].jogada[3]){
                                     vencedor = i;
                                 }
                             }
@@ -233,12 +228,12 @@ class Helper{
                     }
                 }
 
-                if(jogadores[1].jogada[1] == jogo.trunfo){
+                if(jogadores[j[1]].jogada[1] == jogo.trunfo){
                     vencedor = 1;
-                    for(var i=0; i<jogadores.length; i++){
-                        if(jogadores[1].id != jogadores[i].id){
-                            if(jogadores[i].jogada[1] == jogo.trunfo){
-                                if(jogadores[vencedor].jogada[3] < jogadores[i].jogada[3]){
+                    for(var i=0; i<j.length; i++){
+                        if(jogadores[j[1]].id != jogadores[j[i]].id){
+                            if(jogadores[j[i]].jogada[1] == jogo.trunfo){
+                                if(jogadores[j[vencedor]].jogada[3] < jogadores[j[i]].jogada[3]){
                                     vencedor = i;
                                 }
                             }
@@ -246,12 +241,12 @@ class Helper{
                     }
                 }
 
-                if(jogadores[2].jogada[1] == jogo.trunfo){
+                if(jogadores[j[2]].jogada[1] == jogo.trunfo){
                     vencedor = 2;
-                    for(var i=0; i<jogadores.length; i++){
-                        if(jogadores[2].id != jogadores[i].id){
-                            if(jogadores[i].jogada[1] == jogo.trunfo){
-                                if(jogadores[vencedor].jogada[3] < jogadores[i].jogada[3]){
+                    for(var i=0; i<j.length; i++){
+                        if(jogadores[j[2]].id != jogadores[j[i]].id){
+                            if(jogadores[j[i]].jogada[1] == jogo.trunfo){
+                                if(jogadores[j[vencedor]].jogada[3] < jogadores[j[i]].jogada[3]){
                                     vencedor = i;
                                 }
                             }
@@ -259,12 +254,12 @@ class Helper{
                     }
                 }
 
-                if(jogadores[3].jogada[1] == jogo.trunfo){
+                if(jogadores[j[3]].jogada[1] == jogo.trunfo){
                     vencedor = 3;
-                    for(var i=0; i<jogadores.length; i++){
-                        if(jogadores[3].id != jogadores[i].id){
-                            if(jogadores[i].jogada[1] == jogo.trunfo){
-                                if(jogadores[vencedor].jogada[3] < jogadores[i].jogada[3]){
+                    for(var i=0; i<j.length; i++){
+                        if(jogadores[j[3]].id != jogadores[j[i]].id){
+                            if(jogadores[j[i]].jogada[1] == jogo.trunfo){
+                                if(jogadores[j[vencedor]].jogada[3] < jogadores[j[i]].jogada[3]){
                                     vencedor = i;
                                 }
                             }
@@ -272,51 +267,51 @@ class Helper{
                     }
                 }
 
-                jogo.jogadores[vencedor].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]) + parseInt(jogadores[2].jogada[2]) + parseInt(jogadores[3].jogada[2]);
-                jogo.turno = jogadores[vencedor].id;
+                jogo.jogadores[j[vencedor]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]) + parseInt(jogadores[j[2]].jogada[2]) + parseInt(jogadores[j[3]].jogada[2]);
+                jogo.turno = jogadores[j[vencedor]].id;
 
             }else{
                 var vencedor;
-                if(jogadores[0].id == jogo.turno){
+                if(jogadores[j[0]].id == jogo.turno){
                     vencedor = 0;
-                    for(var i=0; i<jogadores.length; i++){
-                        if(jogadores[i].jogada[1] == jogadores[vencedor].jogada[1]){
-                            if(jogadores[i].jogada[3] > jogadores[vencedor].jogada[3]){
+                    for(var i=0; i<j.length; i++){
+                        if(jogadores[j[i]].jogada[1] == jogadores[j[vencedor]].jogada[1]){
+                            if(jogadores[j[i]].jogada[3] > jogadores[j[vencedor]].jogada[3]){
                                 vencedor = i;
                             }
                         }
                     }
-                }else if(jogadores[1].id == jogo.turno){
+                }else if(jogadores[j[1]].id == jogo.turno){
                     vencedor = 1;
-                    for(var i=0; i<jogadores.length; i++){
-                        if(jogadores[i].jogada[1] == jogadores[vencedor].jogada[1]){
-                            if(jogadores[i].jogada[3] > jogadores[vencedor].jogada[3]){
+                    for(var i=0; i<j.length; i++){
+                        if(jogadores[j[i]].jogada[1] == jogadores[j[vencedor]].jogada[1]){
+                            if(jogadores[j[i]].jogada[3] > jogadores[j[vencedor]].jogada[3]){
                                 vencedor = i;
                             }
                         }
                     }
                 }
-                else if(jogadores[2].id == jogo.turno){
+                else if(jogadores[j[2]].id == jogo.turno){
                     vencedor = 2;
-                    for(var i=0; i<jogadores.length; i++){
-                        if(jogadores[i].jogada[1] == jogadores[vencedor].jogada[1]){
-                            if(jogadores[i].jogada[3] > jogadores[vencedor].jogada[3]){
+                    for(var i=0; i<j.length; i++){
+                        if(jogadores[j[i]].jogada[1] == jogadores[j[vencedor]].jogada[1]){
+                            if(jogadores[j[i]].jogada[3] > jogadores[j[vencedor]].jogada[3]){
                                 vencedor = i;
                             }
                         }
                     }
-                }else if(jogadores[3].id == jogo.turno){
+                }else if(jogadores[j[3]].id == jogo.turno){
                     vencedor = 3;
-                    for(var i=0; i<jogadores.length; i++){
-                        if(jogadores[i].jogada[1] == jogadores[vencedor].jogada[1]){
-                            if(jogadores[i].jogada[3] > jogadores[vencedor].jogada[3]){
+                    for(var i=0; i<j.length; i++){
+                        if(jogadores[j[i]].jogada[1] == jogadores[j[vencedor]].jogada[1]){
+                            if(jogadores[j[i]].jogada[3] > jogadores[j[vencedor]].jogada[3]){
                                 vencedor = i;
                             }
                         }
                     }
                 }
-                jogo.jogadores[vencedor].pontos += parseInt(jogadores[0].jogada[2]) + parseInt(jogadores[1].jogada[2]) + parseInt(jogadores[2].jogada[2]) + parseInt(jogadores[3].jogada[2]);
-                jogo.turno = jogadores[vencedor].id;
+                jogo.jogadores[j[vencedor]].pontos += parseInt(jogadores[j[0]].jogada[2]) + parseInt(jogadores[j[1]].jogada[2]) + parseInt(jogadores[j[2]].jogada[2]) + parseInt(jogadores[j[3]].jogada[2]);
+                jogo.turno = jogadores[j[vencedor]].id;
             }
 
             return jogo;
@@ -326,13 +321,13 @@ class Helper{
     getVencedorPartida(jogo){
         var time1 = {pontos: 0, jogadores: []};
         var time2 = {pontos: 0, jogadores: []};
-        for(var i=0; i<jogo.jogadores.length; i++){
-            if(jogo.jogadores[i].time == 1){
-                time1.jogadores.push(jogo.jogadores[i].nome); 
-                time1.pontos += jogo.jogadores[i].pontos;
-            }else if(jogo.jogadores[i].time == 2){
-                time2.jogadores.push(jogo.jogadores[i].nome);
-                time2.pontos += jogo.jogadores[i].pontos;
+        for(var j in jogo.jogadores){
+            if(jogo.jogadores[j].time == 1){
+                time1.jogadores.push(jogo.jogadores[j].nome); 
+                time1.pontos += jogo.jogadores[j].pontos;
+            }else if(jogo.jogadores[j].time == 2){
+                time2.jogadores.push(jogo.jogadores[j].nome);
+                time2.pontos += jogo.jogadores[j].pontos;
             }
         }
         
@@ -358,20 +353,19 @@ class Helper{
     }
 
     salaExiste(idSala, jogos){
-        var index = jogos.findIndex(jogo => jogo.id == idSala);
-        if(index >= 0){
-            return {index: index, result: true};
+        var jogo = jogos[idSala];
+        if(typeof jogo !== "undefined"){
+            return true;
         }else{
-            this.emit.mensagem("A sala informada não existe!");
-            return {result: false};
+            return false;
         }
     }
 
     salaCheia(jogo){
-       if(Object.keys(jogo.jogadores).length < jogo.numJogadores){
-           return false;
-       }else{
+       if(Object.keys(jogo).length < jogo.numJogadores){
            return true;
+       }else{
+           return false;
        }
     }
 
@@ -428,25 +422,21 @@ class Helper{
             this.resposta.result = false;
         },
 
-        carregarSala: (jogo, indexSala) => {
+        carregarSala: (jogo) => {
             this.resposta.emit = "carregarSala";
-            if(typeof indexSala !== "undefined"){
-                this.resposta.resposta = {jogo: jogo, index: indexSala};
-            }else{
-                this.resposta.resposta = jogo;
-            }
+            this.resposta.resposta = jogo;
             this.resposta.result = true;
         },
 
-        iniciarPartida: (jogo, indexSala, times, turnoJogador) => {
+        iniciarPartida: (jogo, times, turnoJogador) => {
             this.resposta.emit = "iniciarPartida";
-            this.resposta.resposta = {jogo: jogo, index: indexSala, times: times, turnoJogador: turnoJogador};
+            this.resposta.resposta = {jogo, times, turnoJogador};
             this.resposta.result = true;
         },
 
-        jogarCarta: (jogo, indexSala) => {
+        jogarCarta: (jogo) => {
             this.resposta.emit = "jogarCarta";
-            this.resposta.resposta = {jogo: jogo, index: indexSala};
+            this.resposta.resposta = jogo;
             this.resposta.result = true;
         },
 
@@ -456,42 +446,13 @@ class Helper{
             this.resposta.result = false;
         },
 
-        calcularRodada: (jogo, indexSala) => {
+        calcularRodada: (jogo) => {
             this.resposta.emit = "calcularRodada";
-            this.resposta.resposta = {jogo: jogo, index: indexSala};
+            this.resposta.resposta = jogo;
             this.resposta.result = true;
         }
 
     }
-
-    desconectar(socketId, jogos){
-        if(jogos.length > 0){
-            for(var [key, value] of Object.entries(jogos)){
-                for(var i=0; i<value.jogadores.length; i++){
-                    if(value.jogadores[i].id == socketId){
-                        var jogo = value;
-                        var jogador = value.jogadores[i];
-                        jogo.jogadores.splice(i, 1);
-                        var dados = {jogo: jogo, index: key, jogador: jogador};
-                        return dados;
-                    }
-                }
-            }
-        }
-        
-        return false;
-
-        /* let index = jogos.findIndex(jogo => jogo.jogadores[socketId].id == socketId);
-        if(typeof jogos[index] !== "undefined"){
-            var jogo = jogos[index];
-            delete jogo.jogadores[socketId];
-
-            return {jogo: jogo, index: index};
-        }else{
-            return false;
-        } */
-    }
-    
 }
 
 module.exports = Helper;
