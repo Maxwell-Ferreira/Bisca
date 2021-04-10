@@ -56,7 +56,7 @@ socket.on('calcularRodada', function(jogador){
     setTimeout(() => {
         darCartas(jogador);
         limparMesa();
-    }, 000);
+    }, 3000);
 });
 
 socket.on('msg', function(msg){
