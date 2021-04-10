@@ -1,9 +1,11 @@
-var socket = io("https://biscabraba.herokuapp.com");
+//var socket = io("https://biscabraba.herokuapp.com");
+var socket = io("http://localhost:3000");
 
 var id = "";
 var idSala = "";
 var nomeJogador = "";
 var formChat;
+var iniciou = "";
 
 socket.on('connect', () =>{
     id = socket.id;
@@ -53,10 +55,7 @@ socket.on('jogadorTurno', nome => {
 });
 
 socket.on('calcularRodada', function(jogador){
-    setTimeout(() => {
-        darCartas(jogador);
-        limparMesa();
-    }, 3000);
+    calcularRodada(jogador);
 });
 
 socket.on('msg', function(msg){
@@ -75,14 +74,14 @@ socket.on('desconexao', function(msg){
     notificacao(msg);
     setTimeout(() => {
         document.location.reload(true);
-    }, 4000);
+    }, 2000);
 })
 
 socket.on('finalizarPartida', function(msg){
     notificacao(msg);
     setTimeout(() => {
         document.location.reload(true);
-    }, 4000);
+    }, 2000);
 })
 
 socket.on('mensagem', mensagem => {
@@ -198,11 +197,8 @@ function removerCartaAdversario(){
 }
 
 function renderJogarCarta(jogada){
-    $("#jogada").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/${jogada[0]}${jogada[1]}.png" class="carta">`);
-    var num = Math.floor(Math.random() * 20);
-    if(num === 10){
-        toasty();
-    }
+    mostrarCarta(jogada);
+    
 }
 
 function limparMesa(){
