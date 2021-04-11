@@ -232,6 +232,7 @@ function enviarMensagem(e){
 
 function mostrarMensagem(mensagem){
     var minhaMsg = "";
+    reproduzirAudio("pop");
     if(mensagem.jogador == nomeJogador){
         minhaMsg = "minhaMsg";
     }
