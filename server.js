@@ -109,10 +109,12 @@ io.on('connection', function(socket){
     });
 
     socket.on('mensagem', mensagem => {
-        if(typeof mensagem === "string"){
-            if(mensagem.length <= 255 && mensagem.length > 0){
-                var jogador = jogos[socket.sala].jogadores[socket.id];
-                io.to(socket.sala).emit("mensagem", {jogador: jogador.nome, texto: mensagem});
+        if(typeof socket.sala !== "undefined"){
+            if(typeof mensagem === "string"){
+                if(mensagem.length <= 255 && mensagem.length > 0){
+                    var jogador = jogos[socket.sala].jogadores[socket.id];
+                    io.to(socket.sala).emit("mensagem", {jogador: jogador.nome, texto: mensagem});
+                }
             }
         }
     });
