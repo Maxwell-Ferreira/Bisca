@@ -1,5 +1,5 @@
-var socket = io("https://biscabraba.herokuapp.com");
-
+//var socket = io("https://biscabraba.herokuapp.com");
+var socket = io("http://localhost:3000");
 var id = "";
 var idSala = "";
 var nomeJogador = "";
@@ -15,6 +15,7 @@ socket.on('connect', () =>{
 socket.on('carregarSala', function(jogadores){
     limparTela();
     gerarTelaPartida();
+    fundoSkol();
     addJogadorLista(jogadores);
 })
 
@@ -124,6 +125,21 @@ function entrarSala(event){
             alerta(entrar.erros);
         }
     }
+}
+
+function fundoSkol(){
+    var x = Math.floor(Math.random() * (100));
+    var y = Math.floor(Math.random() * (100));
+
+    $('body').append(`
+        <div class="skol" onClick="setFundoSkol()" style="left: ${x}%; top: ${y}%"></div>
+    `);
+}
+
+function setFundoSkol(){
+    reproduzirAudio('lets_go_dababy');
+    $('#tela').css("background-image", "url('./imagens/background.jpg')");
+    $('.skol').remove();
 }
 
 function addJogadorLista(jogadores){
