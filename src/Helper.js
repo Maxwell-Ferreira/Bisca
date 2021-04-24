@@ -102,7 +102,7 @@ class Helper{
 
                 this.emit.iniciarPartida(jogo, times, turnoJogador);
             }else{
-                this.emit.mensagem("Ainda faltam jogadores para a partida poder iniiciar!");
+                this.emit.mensagem("Ainda faltam jogadores para a partida poder iniciar!");
             }
         }
         return this.resposta;

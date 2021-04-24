@@ -1,4 +1,4 @@
-var socket = io("https://biscabraba.herokuapp.com");
+var socket = io();
 
 var id = "";
 var idSala = "";
@@ -20,7 +20,7 @@ socket.on('carregarSala', function(jogadores){
 })
 
 socket.on('novoJogador', (players) => {
-    reproduzirAudio("nice");
+    reproduzirAudio("nice.weba");
     for(var id in players){
         notificacao(`${players[id].nome} se conectou!! :D`);
     }
@@ -60,18 +60,18 @@ socket.on('calcularRodada', function(jogador){
 });
 
 socket.on('msg', function(msg){
-    reproduzirAudio("nope");
+    reproduzirAudio("nope.weba");
     notificacao(msg)
 });
 
 socket.on('removerJogador', (nome) =>{
-    reproduzirAudio("oh_no");
+    reproduzirAudio("oh_no.weba");
     notificacao(`${nome} se desconectou! :(`)
     removerJogador(nome);
 });
 
 socket.on('desconexao', function(msg){
-    reproduzirAudio("oh_no");
+    reproduzirAudio("oh_no.weba");
     notificacao(msg);
     setTimeout(() => {
         document.location.reload(true);
@@ -137,9 +137,12 @@ function fundoSkol(){
 }
 
 function setFundoSkol(){
-    reproduzirAudio('lets_go_dababy');
     $('#tela').css("background-image", "url('./imagens/background.jpg')");
+
     $('.skol').remove();
+    var ambiente = new Audio('audios/teodoro_e_sampaio.weba');
+    ambiente.volume = 0.07;
+    ambiente.play();
 }
 
 function addJogadorLista(jogadores){
@@ -171,7 +174,7 @@ function darCartas(jogador){
 
     $('#mao').html('');
     $('#maoOponente').html('');
-    reproduzirAudio("carta");
+    reproduzirAudio("carta.weba");
 
     for(let i=0; i<jogador.mao.length; i++){
         $("#mao").append(`<img src="https://raw.githubusercontent.com/Maxwell-Ferreira/Bisca/master/public/imagens/cartas/${jogador.mao[i][0]}${jogador.mao[i][1]}.png" alt="" class="carta" id="${i}" onClick="jogarCarta(${i})">`);
@@ -206,17 +209,16 @@ function jogarCarta(indice){
 
 function removerCartaJogada(indice){
     $("#"+indice).css("display", "none");
-    reproduzirAudio("carta");
+    reproduzirAudio("carta.weba");
 }
 
 function removerCartaAdversario(){
     $("#op"+1).css("display", "none");
-    reproduzirAudio("carta");
+    reproduzirAudio("carta.weba");
 }
 
 function renderJogarCarta(jogada){
     mostrarCarta(jogada);
-    
 }
 
 function limparMesa(){
@@ -248,7 +250,7 @@ function enviarMensagem(e){
 
 function mostrarMensagem(mensagem){
     var minhaMsg = "";
-    reproduzirAudio("pop");
+    reproduzirAudio("pop.weba");
     if(mensagem.jogador == nomeJogador){
         minhaMsg = "minhaMsg";
     }
@@ -261,7 +263,7 @@ function mostrarMensagem(mensagem){
 }
 
 function exibirVencedor(vencedor){
-    reproduzirAudio('foguete');
+    reproduzirAudio('foguete.weba');
 
     var texto = 'Partida terminada! Os vencedores são: ';
     for(var i=0; i<vencedor.jogadores.length; i++){

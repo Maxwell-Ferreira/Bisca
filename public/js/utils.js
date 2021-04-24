@@ -71,7 +71,6 @@ function fecharAlerta(){
 }
 
 function reproduzirAudio(src){
-    let audio = document.querySelector('#audio');
-    $('#audio').attr("src", `audios/${src}.weba`);
+    var audio = new Audio(`audios/${src}`);
     audio.play();
 }
