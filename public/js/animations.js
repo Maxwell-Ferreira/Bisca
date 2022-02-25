@@ -1,6 +1,6 @@
 function toasty(){
     $(".toasty").addClass("toasty-anime");
-    reproduzirAudio('toasty');
+    reproduzirAudio('toasty.weba');
     setTimeout(() => {
         $('.toasty').removeClass("toasty-anime")
     }, 1000);
